@@ -34,7 +34,8 @@ let infoPlist: [String: InfoPlist.Value] = [
     "CFBundleShortVersionString": "$(APP_VERSION)",
     "CFBundleVersion": "$(BUILD_NUMBER)",
     "CFBundleDisplayName": "$(APP_DISPLAY_NAME)",
-    "ITSAppUsesNonExemptEncryption": false
+    "ITSAppUsesNonExemptEncryption": false,
+    "UILaunchScreen": [:]
 ]
 
 let mainTarget = Target(
