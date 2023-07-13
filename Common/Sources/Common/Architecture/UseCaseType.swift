@@ -6,7 +6,7 @@ public protocol UseCaseType {
     associatedtype Input
     associatedtype Result
     
-    init(provider: RepositoryProviderType)
+    init()
     
     func call(input: Input) async throws -> Result
 }
@@ -32,7 +32,19 @@ extension Container {
     }
     
     var useCaseFactory: Factory<UseCaseFactoryType> {
-        Factory(self) { UseCaseFactory(provider: self.repositoryProvider()) }
+        Factory(self) { UseCaseFactory() }
+    }
+    
+}
+
+public extension Container {
+    
+    var postRepository: Factory<PostRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var communityRepository: Factory<CommunityRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
     }
 }
 
@@ -42,14 +54,11 @@ public protocol UseCaseFactoryType {
 
 public class UseCaseFactory: UseCaseFactoryType {
     
-    private let repositoryProvider: RepositoryProviderType
-    
-    init(provider: RepositoryProviderType) {
-        self.repositoryProvider = provider
+    init() {
     }
     
     public func create<T: UseCaseType>() -> T {
-        return T(provider: repositoryProvider)
+        return T()
     }
 }
 

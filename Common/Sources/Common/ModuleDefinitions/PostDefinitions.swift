@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-public protocol CommunityViewProvider {
+public protocol PostViewProvider {
     func listView() -> AnyView
 }
-

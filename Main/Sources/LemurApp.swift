@@ -1,6 +1,7 @@
 import SwiftUI
 import Common
 import Community
+import Post
 
 @main
 struct LemurApp: App {
@@ -10,6 +11,7 @@ struct LemurApp: App {
     init() {
         provider = ViewProvider()
         provider.communityProvider = Community.ViewProvider()
+        provider.postProvider = Post.ViewProvider()
     }
 
     var body: some Scene {

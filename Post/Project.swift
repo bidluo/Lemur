@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let targetName = "Lemur"
+let targetName = "Post"
 
 // MARK: Configurations
 let debugConfiguration: Configuration = .debug(
@@ -26,27 +26,34 @@ let debugScheme = Scheme(
 
 // MARK: Dependencies
 var dependencies: [TargetDependency] = [
-    .project(target: "Common", path: "../Common"),
-    .project(target: "Community", path: "../Community"),
-    .project(target: "Post", path: "../Post")
+    .project(target: "Common", path: "../Common")
 ]
 
 let infoPlist: [String: InfoPlist.Value] = [
     "CFBundleShortVersionString": "$(APP_VERSION)",
     "CFBundleVersion": "$(BUILD_NUMBER)",
     "CFBundleDisplayName": "$(APP_DISPLAY_NAME)",
-    "ITSAppUsesNonExemptEncryption": false,
-    "UILaunchScreen": [:]
+    "ITSAppUsesNonExemptEncryption": false
 ]
 
-let mainTarget = Target(
-    name: targetName,
+let appTarget = Target(
+    name: "\(targetName)-App",
     platform: .iOS,
     product: .app,
     bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
     deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
     infoPlist: .extendingDefault(with: infoPlist),
-    sources: ["Sources/**"],
+    sources: ["AppSources/**"],
+    dependencies: dependencies + [.target(name: targetName)]
+)
+
+let mainTarget = Target(
+    name: targetName,
+    platform: .iOS,
+    product: .framework,
+    bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
+    deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
+    sources: "Sources/**",
     resources: ["Resources/**"],
     dependencies: dependencies
 )
@@ -55,7 +62,7 @@ let project = Project(
     name: targetName,
     organizationName: "liaw.me",
     settings: Settings.settings(configurations: configurations),
-    targets: [mainTarget],
+    targets: [mainTarget, appTarget],
     schemes: [
         debugScheme
     ]

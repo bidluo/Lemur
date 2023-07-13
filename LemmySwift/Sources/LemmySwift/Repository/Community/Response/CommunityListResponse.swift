@@ -7,13 +7,13 @@ public struct CommunityListResponse: Decodable {
 
 public struct CommunityOverviewResponse: Decodable {
     public let community: CommunityResponse?
-    public let subscribed: Subscribed?
+    public let subscribed: SubscribedResponse?
     public let blocked: Bool?
-    public let counts: Counts?
+    public let counts: CountsResponse?
 }
 
 // MARK: - Counts
-public struct Counts: Decodable {
+public struct CountsResponse: Decodable {
     public let id, communityID, subscribers, posts: Int?
     public let comments: Int?
     public let published: String?
@@ -32,6 +32,6 @@ public struct Counts: Decodable {
     }
 }
 
-public enum Subscribed: String, Codable {
+public enum SubscribedResponse: String, Codable {
     case notSubscribed = "NotSubscribed"
 }

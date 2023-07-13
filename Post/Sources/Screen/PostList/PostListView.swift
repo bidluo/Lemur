@@ -1,9 +1,9 @@
 import SwiftUI
 import Common
 
-public struct CommunityListView: View {
-
-    private var store = CommunityListStore()
+public struct PostListView: View {
+    
+    private var store = PostListStore()
     
     @State private var navigationPath = NavigationPath()
     
@@ -18,6 +18,7 @@ public struct CommunityListView: View {
                     Text(item)
                 }
             }
+            .listStyle(.plain)
         }
         .task {
             try? await store.load()
@@ -26,5 +27,5 @@ public struct CommunityListView: View {
 }
 
 #Preview {
-    CommunityListView()
+    PostListView()
 }

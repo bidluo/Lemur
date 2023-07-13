@@ -2,6 +2,7 @@ import Foundation
 
 public protocol RepositoryProviderType {
     func inject() -> CommunityRepositoryType
+    func inject() -> PostRepositoryType
 }
 
 public class RepositoryProvider: RepositoryProviderType {
@@ -16,5 +17,10 @@ public class RepositoryProvider: RepositoryProviderType {
     public func inject() -> CommunityRepositoryType {
         let remote = CommunityRepositoryRemote(domain: domain, urlSession: urlSession)
         return CommunityRepositoryMain(remote: remote)
+    }
+    
+    public func inject() -> PostRepositoryType {
+        let remote = PostRepositoryRemote(domain: domain, urlSession: urlSession)
+        return PostRepositoryMain(remote: remote)
     }
 }

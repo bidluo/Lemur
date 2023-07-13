@@ -1,9 +1,10 @@
 import Foundation
 import LemmySwift
 import Common
+import Factory
 
 class GetCommunitiesUseCase: UseCaseType {
-    private let repository: CommunityRepositoryType
+    @Injected(\.communityRepository) private var repository: CommunityRepositoryType
     
     typealias Input = Void
     
@@ -15,8 +16,7 @@ class GetCommunitiesUseCase: UseCaseType {
         }
     }
     
-    required init(provider: RepositoryProviderType) {
-        self.repository = provider.inject()
+    required init() {
     }
     
     func call(input: Void) async throws -> Result {
