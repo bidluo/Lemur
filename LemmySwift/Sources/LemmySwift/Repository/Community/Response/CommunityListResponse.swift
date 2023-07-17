@@ -9,11 +9,10 @@ public struct CommunityOverviewResponse: Decodable {
     public let community: CommunityResponse?
     public let subscribed: SubscribedResponse?
     public let blocked: Bool?
-    public let counts: CountsResponse?
+    public let counts: CommunityCountsResponse?
 }
 
-// MARK: - Counts
-public struct CountsResponse: Decodable {
+public struct CommunityCountsResponse: Decodable {
     public let id, communityID, subscribers, posts: Int?
     public let comments: Int?
     public let published: String?

@@ -10,19 +10,15 @@ class GetPostListUseCase: UseCaseType {
     typealias Input = Void
     struct Result {
         
-        public let posts: [Post]
-        
-        public struct Post {
-            public let title: String?
-        }
+        public let posts: [PostSummary]
     }
     
     required init() {
     }
     
     func call(input: Void) async throws -> Result {
-        let posts = try await repository.getPosts().posts?.map { post in
-            Result.Post(title: post.post?.name)
+        let posts = try await repository.getPosts().posts?.compactMap { post -> PostSummary? in
+            return try? PostSummary(post: post)
         } ?? []
         
         return Result(posts: posts)

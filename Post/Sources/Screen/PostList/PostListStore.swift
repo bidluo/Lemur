@@ -8,14 +8,14 @@ class PostListStore {
     @ObservationIgnored
     @UseCase private var useCase: GetPostListUseCase
     
-    var rows: [String] = []
+    var rows: [PostSummary] = []
     
     init() {
     }
     
     func load() async throws {
         let posts = try await useCase.call(input: ())
-        rows = posts.posts.compactMap { $0.title }
+        rows = posts.posts
     }
     
 }

@@ -9,7 +9,7 @@ public struct CommunityResponse: Decodable {
     public let actorID: String?
     public let local, hidden, postingRestrictedToMods: Bool?
     public let instanceID: Int?
-    public let icon, banner: String?
+    public let icon, banner: URL?
     public let updated: String?
 
     enum CodingKeys: String, CodingKey {

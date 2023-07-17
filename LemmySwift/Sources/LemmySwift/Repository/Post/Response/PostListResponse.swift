@@ -1,43 +1,26 @@
 import Foundation
 
 public struct PostListResponse: Decodable {
-    public let posts: [PostResponse]?
+    public let posts: [PostDetailResponse]?
 }
 
-public struct PostResponse: Decodable {
-    public let post: PostDetailsResponse?
-    public let creator: CreatorResponse?
-    public let community: CommunityResponse?
-    public let creatorBannedFromCommunity: Bool?
-    public let counts: CountsResponse?
-    public let subscribed: SubscribedResponse?
-    public let saved, read, creatorBlocked: Bool?
-    public let unreadComments: Int?
-    
-    enum CodingKeys: String, CodingKey {
-        case post, creator, community
-        case creatorBannedFromCommunity = "creator_banned_from_community"
-        case counts, subscribed, saved, read
-        case creatorBlocked = "creator_blocked"
-        case unreadComments = "unread_comments"
-    }
-}
-
-public struct PostDetailsResponse: Decodable {
+public struct PostContentResponse: Decodable {
     public let id: Int?
     public let name: String?
-    public let url: String?
+    public let url: URL?
     public let body: String?
     public let creatorID, communityID: Int?
     public let removed, locked: Bool?
     public let published: String?
     public let deleted, nsfw: Bool?
-    public let thumbnailURL: String?
+    public let thumbnailURL: URL?
     public let apID: String?
     public let local: Bool?
     public let languageID: Int?
     public let featuredCommunity, featuredLocal: Bool?
+    
     public let embedTitle, embedDescription: String?
+    public let updated: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, url, body
@@ -52,5 +35,6 @@ public struct PostDetailsResponse: Decodable {
         case featuredLocal = "featured_local"
         case embedTitle = "embed_title"
         case embedDescription = "embed_description"
+        case updated
     }
 }
