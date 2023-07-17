@@ -1,16 +1,8 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "ScreenTItle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Screen title"
-          }
-        }
-      }
+    "Lemur" : {
+
     }
   },
   "version" : "1.0"

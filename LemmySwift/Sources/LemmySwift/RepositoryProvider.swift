@@ -10,7 +10,7 @@ public class RepositoryProvider: RepositoryProviderType {
     private let urlSession: URLSession
     
     public init() {
-        domain = URL(string: "https://lemmy.ml/api/v3/")!
+        domain = URL(string: "https://lemmy.world/api/v3/")!
         urlSession = URLSession.shared
     }
     

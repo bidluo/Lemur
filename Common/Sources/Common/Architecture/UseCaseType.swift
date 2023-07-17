@@ -25,29 +25,6 @@ extension UseCaseType where Result == Void {
     }
 }
 
-extension Container {
-    
-    var repositoryProvider: Factory<RepositoryProviderType> {
-        Factory(self) { RepositoryProvider() }
-    }
-    
-    var useCaseFactory: Factory<UseCaseFactoryType> {
-        Factory(self) { UseCaseFactory() }
-    }
-    
-}
-
-public extension Container {
-    
-    var postRepository: Factory<PostRepositoryType> {
-        Factory(self) { self.repositoryProvider().inject() }
-    }
-    
-    var communityRepository: Factory<CommunityRepositoryType> {
-        Factory(self) { self.repositoryProvider().inject() }
-    }
-}
-
 public protocol UseCaseFactoryType {
     func create<T: UseCaseType>() -> T
 }
