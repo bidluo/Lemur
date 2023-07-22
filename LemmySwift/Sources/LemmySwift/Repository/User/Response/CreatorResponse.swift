@@ -5,7 +5,7 @@ public struct CreatorResponse: Decodable {
     public let name: String?
     public let banned: Bool?
     public let published: String?
-    public let actorID: String?
+    public let actorID: URL?
     public let local, deleted, admin, botAccount: Bool?
     public let instanceID: Int?
     public let displayName: String?

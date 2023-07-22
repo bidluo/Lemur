@@ -11,9 +11,62 @@ enum NetworkFailure: LocalizedError {
     case unauthorised, forbidden, notFound, unknown
 }
 
+
+extension DateFormatter {
+    public static var iso8601Full: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    
+    public static var iso8601Short: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+    
+    public static var iso8601Shorter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+}
+
+extension JSONDecoder.DateDecodingStrategy {
+    public static var iso8601Multi: JSONDecoder.DateDecodingStrategy = .custom { decoder -> Date in
+        let container = try decoder.singleValueContainer()
+        let dateString = try container.decode(String.self)
+        
+        if let date = DateFormatter.iso8601Full.date(from: dateString) {
+            return date
+        }
+        
+        if let date = DateFormatter.iso8601Short.date(from: dateString) {
+            return date
+        }
+        
+        if let date = DateFormatter.iso8601Shorter.date(from: dateString) {
+            return date
+        }
+        
+        throw DecodingError.dataCorruptedError(in: container,
+                                               debugDescription: "Cannot decode date string \(dateString)")
+    }
+}
+
 extension NetworkType {
     func perform<T>(http: Spec) async throws -> T where T: Decodable {
         let jsonDecoder = JSONDecoder()
+        jsonDecoder.dateDecodingStrategy = .iso8601Multi
         
         let request = try buildRequest(http: http)
         let (data, _response) = try await asyncActor.perform(request: request, urlSession: urlSession)

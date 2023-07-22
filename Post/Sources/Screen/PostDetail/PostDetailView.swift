@@ -21,12 +21,18 @@ struct PostDetailView: View {
                         .listRowSeparator(.hidden, edges: .all)
                 }
             }
+            
+            NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
+                CommentView(comment: comment, nestLevel: nestLevel)
+            }
+            .disclosureGroupStyle(.arrowLess)
+            .listRowInsets(EdgeInsets(.all, size: .zero))
         }
         .navigationBarTitleDisplayMode(.inline)
         .environment(\.defaultMinListHeaderHeight, .zero)
         .listStyle(.grouped)
         .task {
-            try? await store.load()
+            try! await store.load()
         }
     }
 }

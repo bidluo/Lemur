@@ -23,5 +23,4 @@ class GetPostListUseCase: UseCaseType {
         
         return Result(posts: posts)
     }
-    
 }

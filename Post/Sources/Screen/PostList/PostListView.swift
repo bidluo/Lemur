@@ -35,7 +35,7 @@ struct PostListView: View {
             })
         }
         .task {
-            try? await store.load()
+            try! await store.load()
         }
     }
 }
