@@ -34,6 +34,20 @@ struct CommentView: View {
                 }
                 
                 MarkdownTextView(text: comment.content)
+                
+                HStack(spacing: Size.small.rawValue) {
+                    Spacer()
+                    
+                    if let score = comment.score {
+                        Group {
+                            Text("\(score)")
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
+                        .font(.footnote)
+                        .fontDesign(.monospaced)
+                    }
+                }
+                
             }.padding(.smallMedium)
         }
     }

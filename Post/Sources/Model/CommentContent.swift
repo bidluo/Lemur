@@ -7,6 +7,9 @@ struct CommentContent: Identifiable, Hashable, Equatable {
     let creatorIsLocal: Bool
     let publishDate: Date?
     let creatorHome: String?
+    var score: Int?
+    
+    // Display purpose only
     var parentId: Int?
     var children: [CommentContent]?
     

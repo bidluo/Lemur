@@ -42,6 +42,7 @@ class GetPostCommentsUseCase: UseCaseType {
                 creatorIsLocal: creator?.local ?? false,
                 publishDate: commentResponse.counts?.published,
                 creatorHome: creator?.actorID?.host(),
+                score: commentResponse.counts?.score,
                 parentId: nil,
                 children: []
             )
