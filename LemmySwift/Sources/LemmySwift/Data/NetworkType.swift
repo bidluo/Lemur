@@ -64,6 +64,11 @@ extension JSONDecoder.DateDecodingStrategy {
 }
 
 extension NetworkType {
+    
+    func perform<T>(http: Spec, for: T.Type) async throws -> T where T: Decodable {
+        return try await perform(http: http)
+    }
+    
     func perform<T>(http: Spec) async throws -> T where T: Decodable {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.dateDecodingStrategy = .iso8601Multi

@@ -39,7 +39,8 @@ struct PostSummary {
         self.body = postContent.body
         self.creatorId = _creatorId
         self.creatorName = creator?.name ?? ""
-        self.creatorThumbnail = creator?.avatar
+//        self.creatorThumbnail = creator?.avatar
+        self.creatorThumbnail = nil
         self.communityId = _communityId
         self.communityName = community?.name ?? ""
         self.communityThumbnail = community?.icon

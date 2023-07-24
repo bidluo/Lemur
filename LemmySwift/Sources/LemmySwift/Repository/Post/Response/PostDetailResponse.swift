@@ -1,17 +1,44 @@
 import Foundation
+import MetaCodable
+import SwiftData
 
-public struct PostDetailResponse: Decodable {
-    public let post: PostContentResponse?
-    public let creator: ModeratorDetailResponse?
-    public let community: CommunityResponse?
-    public let creatorBannedFromCommunity: Bool?
-    public let counts: PostCountsResponse?
-    public let subscribed: String?
-    public let saved, read, creatorBlocked: Bool?
-    public let unreadComments: Int?
+public protocol PostDetailResponse {
+    var post: (any PostContent)? { get }
+    var creator: (any CreatorResponse)? { get }
+    var community: (any CommunityResponse)? { get }
+    var creatorBannedFromCommunity: Bool? { get }
+    var counts: PostCountsResponse? { get }
+    var subscribed: String? { get }
+    var saved: Bool? { get }
+    var read: Bool? { get }
+    var creatorBlocked: Bool? { get }
+    var unreadComments: Int? { get }
+}
+
+public struct PostDetailResponseRemote: PostDetailResponse, Decodable {
+    public var rawPost: PostContentRemote?
+    public var rawCreator: CreatorResponseRemote?
+    public var rawCommunity: CommunityResponseRemote?
+    public var creatorBannedFromCommunity: Bool?
+    public var counts: PostCountsResponse?
+    public var subscribed: String?
+    public var saved, read, creatorBlocked: Bool?
+    public var unreadComments: Int?
+    
+    public var creator: (CreatorResponse)? { return rawCreator }
+    
+    public var post: (PostContent)? {
+        return rawPost
+    }
+    
+    public var community: (CommunityResponse)? {
+        return rawCommunity
+    }
     
     enum CodingKeys: String, CodingKey {
-        case post, creator, community
+        case rawPost = "post"
+        case rawCommunity = "community"
+        case rawCreator = "creator"
         case creatorBannedFromCommunity = "creator_banned_from_community"
         case counts, subscribed, saved, read
         case creatorBlocked = "creator_blocked"
@@ -19,7 +46,43 @@ public struct PostDetailResponse: Decodable {
     }
 }
 
-public struct PostCountsResponse: Decodable {
+@Model
+public class PostDetailResponseLocal: PostDetailResponse {
+    @Attribute(.unique) public let postId: Int
+    public var rawPost: PostContentLocal?
+    public var rawCreator: CreatorResponseLocal?
+    public var rawCommunity: CommunityResponseLocal?
+    public var creatorBannedFromCommunity: Bool?
+    @Transient public var counts: PostCountsResponse?
+    public var subscribed: String?
+    public var saved: Bool?
+    public var read: Bool?
+    public var creatorBlocked: Bool?
+    public var unreadComments: Int?
+    
+    public var post: (PostContent)? { return rawPost }
+    public var community: (CommunityResponse)? { return rawCommunity }
+    public var creator: CreatorResponse? { return rawCreator }
+    
+    init?(remote: PostDetailResponseRemote?) {
+        let post = PostContentLocal(remote: remote?.rawPost)
+        guard let postId = post.id else { return nil }
+        
+        self.postId = postId
+        self.rawPost = post
+        self.rawCreator = CreatorResponseLocal(remote: remote?.rawCreator)
+        self.rawCommunity = CommunityResponseLocal(remote: remote?.rawCommunity)
+        self.creatorBannedFromCommunity = remote?.creatorBannedFromCommunity
+        self.counts = remote?.counts
+        self.subscribed = remote?.subscribed
+        self.saved = remote?.saved
+        self.read = remote?.read
+        self.creatorBlocked = remote?.creatorBlocked
+        self.unreadComments = remote?.unreadComments
+    }
+}
+
+public struct PostCountsResponse: Codable {
     public let id, postID, comments, score: Int?
     public let upvotes, downvotes: Int?
     public let published, newestCommentTimeNecro, newestCommentTime: String?
@@ -39,33 +102,3 @@ public struct PostCountsResponse: Decodable {
     }
 }
 
-public struct ModeratorDetailResponse: Codable {
-    public let id: Int?
-    public let name: String?
-    public let avatar: URL?
-    public let banned: Bool?
-    public let published: String?
-    public let actorID: String?
-    public let bio: String?
-    public let local, deleted, admin, botAccount: Bool?
-    public let instanceID: Int?
-    public let displayName: String?
-    public let banner: String?
-    public let matrixUserID: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case id, name, avatar, banned, published
-        case actorID = "actor_id"
-        case bio, local, deleted, admin
-        case botAccount = "bot_account"
-        case instanceID = "instance_id"
-        case displayName = "display_name"
-        case banner
-        case matrixUserID = "matrix_user_id"
-    }
-}
-
-public struct ModeratorResponse: Decodable {
-    public let community: CommunityResponse?
-    public let moderator: ModeratorDetailResponse?
-}

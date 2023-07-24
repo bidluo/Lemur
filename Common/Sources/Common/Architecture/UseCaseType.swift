@@ -25,6 +25,27 @@ extension UseCaseType where Result == Void {
     }
 }
 
+extension UseCaseType {
+    public func mapAsyncStream<Input, Output>(
+        _ stream: AsyncThrowingStream<Input, Error>,
+        transform: @escaping (Input) throws -> Output
+    ) -> AsyncThrowingStream<Output, Error> {
+        return AsyncThrowingStream<Output, Error> { continuation in
+            Task {
+                do {
+                    for try await input in stream {
+                        let output = try transform(input)
+                        continuation.yield(output)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
+    }
+}
+
 public protocol UseCaseFactoryType {
     func create<T: UseCaseType>() -> T
 }

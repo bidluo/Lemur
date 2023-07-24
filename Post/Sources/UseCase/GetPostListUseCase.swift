@@ -8,8 +8,8 @@ class GetPostListUseCase: UseCaseType {
     @Injected(\.postRepository) private var repository: PostRepositoryType
     
     typealias Input = Void
-    struct Result {
-        
+    typealias Result = AsyncThrowingStream<ResultObject, Error>
+    struct ResultObject {
         public let posts: [PostSummary]
     }
     
@@ -17,10 +17,14 @@ class GetPostListUseCase: UseCaseType {
     }
     
     func call(input: Void) async throws -> Result {
-        let posts = try await repository.getPosts().posts?.compactMap { post -> PostSummary? in
-            return try? PostSummary(post: post)
-        } ?? []
+        let stream = repository.getPosts()
         
-        return Result(posts: posts)
+        return mapAsyncStream(stream) { postList -> ResultObject in
+            let posts = postList.posts?.compactMap { post in
+                return try? PostSummary(post: post)
+            } ?? []
+            
+            return ResultObject(posts: posts)
+        }
     }
 }

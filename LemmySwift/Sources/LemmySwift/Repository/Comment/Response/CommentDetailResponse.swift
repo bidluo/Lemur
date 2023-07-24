@@ -2,9 +2,9 @@ import Foundation
 
 public struct CommentDetailResponse: Decodable {
     public let comment: CommentContentResponse?
-    public let creator: CreatorResponse?
-    public let post: PostResponse?
-    public let community: CommunityResponse?
+    public let creator: CreatorResponseRemote?
+    public let post: PostResponseRemote?
+    public let community: CommunityResponseRemote?
     public let counts: CommentCounts?
     public let creatorBannedFromCommunity: Bool?
     public let subscribed: SubscribedResponse?

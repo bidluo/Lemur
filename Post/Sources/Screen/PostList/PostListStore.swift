@@ -14,8 +14,11 @@ class PostListStore {
     }
     
     func load() async throws {
-        let posts = try await useCase.call(input: ())
-        rows = posts.posts
+//        let posts = try await useCase.call(input: ())
+//        rows = posts.posts
+        for try await posts in try await useCase.call(input: ()) {
+            rows = posts.posts
+        }
     }
     
 }

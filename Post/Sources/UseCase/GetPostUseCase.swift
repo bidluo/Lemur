@@ -11,7 +11,7 @@ class GetPostUseCase: UseCaseType {
         let id: Int
     }
     
-    typealias Result = PostSummary
+    typealias Result = AsyncThrowingStream<PostSummary, Error>
     
     enum Failure: LocalizedError {
         case invalidCreatorId
@@ -22,8 +22,10 @@ class GetPostUseCase: UseCaseType {
     required init() {}
     
     func call(input: Input) async throws -> Result {
-        let post = try await repository.getPost(id: input.id)
+        let stream = repository.getPost(id: input.id)
         
-        return try Result(post: post.postDetails)
+        return mapAsyncStream(stream) { post -> PostSummary in
+            return try PostSummary(post: post)
+        }
     }
 }

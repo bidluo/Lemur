@@ -21,9 +21,11 @@ class PostDetailStore {
     }
     
     func load() async throws {
-        async let _post = getPostUseCase.call(input: .init(id: postId))
-        async let _comments = getCommentsUseCase.call(input: .init(postId: postId))
-        self.post = try await _post
-        self.comments = try await _comments.comments
+        for try await post in try await getPostUseCase.call(input: .init(id: postId)) {
+            self.post = post
+        }
+        
+        let _comments = try await getCommentsUseCase.call(input: .init(postId: postId))
+        self.comments = _comments.comments
     }
 }
