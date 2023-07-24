@@ -1,9 +1,9 @@
 import Foundation
 import Factory
 import LemmySwift
+import SwiftUI
 
 extension Container {
-    
     var repositoryProvider: Factory<RepositoryProviderType> {
         Factory(self) { RepositoryProvider() }
     }

@@ -26,8 +26,7 @@ struct PostView: View {
                 }
                 
                 if let _body = post.body, _body.isEmpty == false {
-                    Text(AttributedString(stringLiteral: _body))
-                        .font(.captionStandard)
+                    MarkdownTextView(text: _body)
                         .lineLimit(fullView ? nil : 3)
                         .padding(.horizontal, .medium)
                 }
@@ -46,7 +45,7 @@ struct PostView: View {
             }
             .padding([.horizontal, .bottom], .medium)
         }
-        .background(Color.white)
+        .background(Colour.secondaryBackground.swiftUIColor)
     }
 }
 

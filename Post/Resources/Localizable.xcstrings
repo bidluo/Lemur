@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "@%@" : {
+
+    },
+    "%@" : {
+
+    },
     "Lemur" : {
 
     }

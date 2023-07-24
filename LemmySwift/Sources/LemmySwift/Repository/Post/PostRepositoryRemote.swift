@@ -18,4 +18,8 @@ public class PostRepositoryRemote: PostRepositoryType, NetworkType {
     public func getPost(id: Int) async throws -> PostResponse {
         return try await perform(http: PostSpec.post(id))
     }
+    
+    public func getPostComments(postId: Int) async throws -> CommentListResponse {
+        return try await perform(http: PostSpec.postComments(postId))
+    }
 }

@@ -18,6 +18,7 @@ let project = Project(
             bundleId: "me.liaw.LemurCommon",
             deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
             sources: "Sources/Common/**",
+            resources: "Resources/**",
             dependencies: dependencies
         )
     ]
