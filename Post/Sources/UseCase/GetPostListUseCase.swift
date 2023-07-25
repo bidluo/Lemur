@@ -3,28 +3,27 @@ import Common
 import LemmySwift
 import Factory
 
-class GetPostListUseCase: UseCaseType {
+class GetPostListUseCase: UseCaseStreamType {
     
     @Injected(\.postRepository) private var repository: PostRepositoryType
     
     typealias Input = Void
-    typealias Result = AsyncThrowingStream<ResultObject, Error>
-    struct ResultObject {
+    struct Result {
         public let posts: [PostSummary]
     }
     
     required init() {
     }
     
-    func call(input: Void) async throws -> Result {
+    func call(input: Void) -> AsyncThrowingStream<Result, Error> {
         let stream = repository.getPosts()
         
-        return mapAsyncStream(stream) { postList -> ResultObject in
+        return mapAsyncStream(stream) { postList -> Result in
             let posts = postList.posts?.compactMap { post in
                 return try? PostSummary(post: post)
             } ?? []
             
-            return ResultObject(posts: posts)
+            return Result(posts: posts)
         }
     }
 }

@@ -73,5 +73,4 @@ class GetPostCommentsUseCase: UseCaseType {
         
         return Result(comments: buildTree(0) ?? [])
     }
-
 }

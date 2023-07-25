@@ -3,37 +3,32 @@ import SwiftData
 
 public class PostRepositoryLocal {
     
-    private let container: ModelContainer
+    private let context: ModelContext?
     
-    init(container: ModelContainer) {
-        self.container = container
+    init(context: ModelContext?) {
+        self.context = context
     }
     
-    @MainActor
-    public func getPosts() async throws -> PostListLocal {
-        let posts = try container.mainContext.fetch(FetchDescriptor<PostDetailResponseLocal>())
+    public func getPosts() async -> PostListLocal {
+        let posts = try? context?.fetch(FetchDescriptor<PostDetailResponseLocal>())
         return PostListLocal(posts: posts)
     }
     
-    @MainActor
-    public func savePosts(posts: [PostDetailResponseRemote]) async throws {
-        posts.forEach { [weak container] post in
+    public func savePosts(posts: [PostDetailResponseRemote]) async {
+        // TODO: Figure out how to do batch when there's actually documentation
+        posts.forEach { [weak context] post in
             guard let localPost = PostDetailResponseLocal(remote: post) else { return }
-            container?.mainContext.insert(object: localPost)
+            context?.insert(object: localPost)
         }
-        try container.mainContext.save()
+        
+        try? context?.save()
     }
     
-    @MainActor
-    public func getPost(id: Int) async throws -> PostDetailResponse? {
+    public func getPost(id: Int) async -> PostDetailResponse? {
         let postFetch = FetchDescriptor<PostDetailResponseLocal>(
             predicate: #Predicate { $0.rawPost?.id == id }
         )
         
-        return try? container.mainContext.fetch(postFetch).first
-    }
-    
-    public func getPostComments(postId: Int) async throws -> CommentListResponse {
-        fatalError()
+        return try? context?.fetch(postFetch).first
     }
 }

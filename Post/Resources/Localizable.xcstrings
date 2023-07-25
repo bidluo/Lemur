@@ -2,13 +2,24 @@
   "sourceLanguage" : "en",
   "strings" : {
     "@%@" : {
-
+      "extractionState" : "manual"
     },
     "%@" : {
 
     },
     "Lemur" : {
 
+    },
+    "Old" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Old"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

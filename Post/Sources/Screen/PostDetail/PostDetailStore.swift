@@ -6,7 +6,7 @@ import Observation
 class PostDetailStore {
     
     @ObservationIgnored
-    @UseCase private var getPostUseCase: GetPostUseCase
+    @UseCaseStream private var getPostUseCase: GetPostUseCase
     
     @ObservationIgnored
     @UseCase private var getCommentsUseCase: GetPostCommentsUseCase
@@ -21,7 +21,7 @@ class PostDetailStore {
     }
     
     func load() async throws {
-        for try await post in try await getPostUseCase.call(input: .init(id: postId)) {
+        for try await post in getPostUseCase.call(input: .init(id: postId)) {
             self.post = post
         }
         

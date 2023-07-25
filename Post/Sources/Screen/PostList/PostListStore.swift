@@ -6,7 +6,7 @@ import Observation
 class PostListStore {
     
     @ObservationIgnored
-    @UseCase private var useCase: GetPostListUseCase
+    @UseCaseStream private var useCase: GetPostListUseCase
     
     var rows: [PostSummary] = []
     
@@ -14,11 +14,8 @@ class PostListStore {
     }
     
     func load() async throws {
-//        let posts = try await useCase.call(input: ())
-//        rows = posts.posts
-        for try await posts in try await useCase.call(input: ()) {
+        for try await posts in useCase.call(input: ()) {
             rows = posts.posts
         }
     }
-    
 }

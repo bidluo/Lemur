@@ -6,12 +6,6 @@ protocol NetworkType {
     var asyncActor: AsyncDataTaskActor { get }
 }
 
-enum NetworkFailure: LocalizedError {
-    case invalidResponse
-    case unauthorised, forbidden, notFound, unknown
-}
-
-
 extension DateFormatter {
     public static var iso8601Full: DateFormatter = {
         let formatter = DateFormatter()
