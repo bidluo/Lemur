@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-public protocol PostContent {
+public protocol PostContentResponse {
     var id: Int? { get }
     var name: String? { get }
     var url: URL? { get }
@@ -25,7 +25,7 @@ public protocol PostContent {
     var updated: String? { get }
 }
 
-public struct PostContentRemote: PostContent, Decodable {
+public struct PostContentResponseRemote: PostContentResponse, Decodable {
     public var id: Int?
     public var name: String?
     public var url: URL?
@@ -65,7 +65,7 @@ public struct PostContentRemote: PostContent, Decodable {
 }
 
 @Model
-public class PostContentLocal: PostContent {
+class PostContentResponseLocal: PostContentResponse {
     public var id: Int?
     public var name: String?
     public var url: URL?
@@ -87,7 +87,9 @@ public class PostContentLocal: PostContent {
     public var embedDescription: String?
     public var updated: String?
     
-    init(remote: PostContentRemote?) {
+    @Relationship(.cascade, inverse: \CommentDetailResponseLocal.rawPost) var comments: [CommentDetailResponseLocal]? = []
+    
+    init(remote: PostContentResponseRemote?) {
         self.id = remote?.id
         self.name = remote?.name
         self.url = remote?.url

@@ -17,7 +17,7 @@ public protocol CommunityResponse {
     var instanceID: Int? { get }
     var icon: URL? { get }
     var banner: URL? { get }
-    var updated: String? { get }
+    var updated: Date? { get }
 }
 
 public struct CommunityResponseRemote: CommunityResponse, Decodable {
@@ -31,7 +31,7 @@ public struct CommunityResponseRemote: CommunityResponse, Decodable {
     public let local, hidden, postingRestrictedToMods: Bool?
     public let instanceID: Int?
     public let icon, banner: URL?
-    public let updated: String?
+    public let updated: Date?
     
     enum CodingKeys: String, CodingKey {
         case communityDescription = "description"
@@ -45,25 +45,27 @@ public struct CommunityResponseRemote: CommunityResponse, Decodable {
 }
 
 @Model
-public class CommunityResponseLocal: CommunityResponse {
-    public var id: Int?
-    public var name: String?
-    public var title: String?
-    public var communityDescription: String?
-    public var removed: Bool?
-    public var published: String?
-    public var deleted: Bool?
-    public var nsfw: Bool?
-    public var actorID: String?
-    public var local: Bool?
-    public var hidden: Bool?
-    public var postingRestrictedToMods: Bool?
-    public var instanceID: Int?
-    public var icon: URL?
-    public var banner: URL?
-    public var updated: String?
+class CommunityResponseLocal: CommunityResponse {
+    @Attribute(.unique)  var id: Int?
+    var name: String?
+    var title: String?
+    var communityDescription: String?
+    var removed: Bool?
+    var published: String?
+    var deleted: Bool?
+    var nsfw: Bool?
+    var actorID: String?
+    var local: Bool?
+    var hidden: Bool?
+    var postingRestrictedToMods: Bool?
+    var instanceID: Int?
+    var icon: URL?
+    var banner: URL?
+    var updated: Date?
     
-    public init(remote: CommunityResponseRemote?) {
+    @Relationship(inverse: \PostDetailResponseLocal.rawCommunity)  var posts: [PostDetailResponseLocal]? = []
+    
+    init(remote: CommunityResponseRemote?) {
         self.id = remote?.id
         self.name = remote?.name
         self.title = remote?.title

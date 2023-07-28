@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-public class PostRepositoryLocal {
+public actor PostRepositoryLocal {
     
     private let context: ModelContext?
     
@@ -9,22 +9,44 @@ public class PostRepositoryLocal {
         self.context = context
     }
     
-    public func getPosts() async -> PostListLocal {
+    func getPosts() async -> PostListResponseLocal {
         let posts = try? context?.fetch(FetchDescriptor<PostDetailResponseLocal>())
-        return PostListLocal(posts: posts)
+        return PostListResponseLocal(posts: posts)
     }
     
-    public func savePosts(posts: [PostDetailResponseRemote]) async {
+    func savePosts(posts: [PostDetailResponseRemote]) async {
         // TODO: Figure out how to do batch when there's actually documentation
-        posts.forEach { [weak context] post in
-            guard let localPost = PostDetailResponseLocal(remote: post) else { return }
-            context?.insert(object: localPost)
+        posts.forEach { post in
+            try? context?.transaction {
+                let communityId = post.rawCommunity?.id
+                let creatorId = post.rawCreator?.id
+                let communityFetch = FetchDescriptor<CommunityResponseLocal>(
+                    predicate: #Predicate { $0.id != nil && $0.id == communityId }
+                )
+                
+                let creatorFetch = FetchDescriptor<CreatorResponseLocal>(
+                    predicate: #Predicate { $0.id != nil && $0.id == creatorId }
+                )
+                
+                var community = try? context?.fetch(communityFetch).first
+                var creator = try? context?.fetch(creatorFetch).first
+                if community == nil {
+                    community = CommunityResponseLocal(remote: post.rawCommunity)
+                }
+                
+                if creator == nil {
+                    creator = CreatorResponseLocal(remote: post.rawCreator)
+                }
+                
+                guard let localPost = PostDetailResponseLocal(remote: post) else { return }
+                localPost.rawCommunity = community
+                localPost.rawCreator = creator
+                self.context?.insert(object: localPost)
+            }
         }
-        
-        try? context?.save()
     }
     
-    public func getPost(id: Int) async -> PostDetailResponse? {
+    func getPost(id: Int) async -> PostDetailResponse? {
         let postFetch = FetchDescriptor<PostDetailResponseLocal>(
             predicate: #Predicate { $0.rawPost?.id == id }
         )

@@ -5,12 +5,16 @@ import SwiftUI
 
 extension Container {
     var repositoryProvider: Factory<RepositoryProviderType> {
-        Factory(self) { RepositoryProvider() }
+        Factory(self) { RepositoryProvider() }.singleton
     }
 }
 
 public extension Container {
     var postRepository: Factory<PostRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var commentRepository: Factory<CommentRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
     

@@ -1,9 +1,8 @@
 import Foundation
-import MetaCodable
 import SwiftData
 
 public protocol PostDetailResponse {
-    var post: (any PostContent)? { get }
+    var post: (any PostContentResponse)? { get }
     var creator: (any CreatorResponse)? { get }
     var community: (any CommunityResponse)? { get }
     var creatorBannedFromCommunity: Bool? { get }
@@ -15,19 +14,19 @@ public protocol PostDetailResponse {
     var unreadComments: Int? { get }
 }
 
-public struct PostDetailResponseRemote: PostDetailResponse, Decodable {
-    public var rawPost: PostContentRemote?
-    public var rawCreator: CreatorResponseRemote?
-    public var rawCommunity: CommunityResponseRemote?
-    public var creatorBannedFromCommunity: Bool?
-    public var counts: PostCountsResponse?
-    public var subscribed: String?
-    public var saved, read, creatorBlocked: Bool?
-    public var unreadComments: Int?
+struct PostDetailResponseRemote: PostDetailResponse, Decodable {
+    var rawPost: PostContentResponseRemote?
+    var rawCreator: CreatorResponseRemote?
+    var rawCommunity: CommunityResponseRemote?
+    var creatorBannedFromCommunity: Bool?
+    var counts: PostCountsResponse?
+    var subscribed: String?
+    var saved, read, creatorBlocked: Bool?
+    var unreadComments: Int?
     
     public var creator: (CreatorResponse)? { return rawCreator }
     
-    public var post: (PostContent)? {
+    public var post: (PostContentResponse)? {
         return rawPost
     }
     
@@ -47,31 +46,29 @@ public struct PostDetailResponseRemote: PostDetailResponse, Decodable {
 }
 
 @Model
-public class PostDetailResponseLocal: PostDetailResponse {
-    @Attribute(.unique) public let postId: Int
-    public var rawPost: PostContentLocal?
-    public var rawCreator: CreatorResponseLocal?
-    public var rawCommunity: CommunityResponseLocal?
-    public var creatorBannedFromCommunity: Bool?
-    @Transient public var counts: PostCountsResponse?
-    public var subscribed: String?
-    public var saved: Bool?
-    public var read: Bool?
-    public var creatorBlocked: Bool?
-    public var unreadComments: Int?
+class PostDetailResponseLocal: PostDetailResponse {
+    @Attribute(.unique) let postId: Int
+    @Relationship(.cascade)  var rawPost: PostContentResponseLocal?
+    @Relationship  var rawCreator: CreatorResponseLocal?
+    @Relationship  var rawCommunity: CommunityResponseLocal?
+    @Transient  var counts: PostCountsResponse?
+    var creatorBannedFromCommunity: Bool?
+    var subscribed: String?
+    var saved: Bool?
+    var read: Bool?
+    var creatorBlocked: Bool?
+    var unreadComments: Int?
     
-    public var post: (PostContent)? { return rawPost }
-    public var community: (CommunityResponse)? { return rawCommunity }
-    public var creator: CreatorResponse? { return rawCreator }
+    var post: (PostContentResponse)? { return rawPost }
+    var community: (CommunityResponse)? { return rawCommunity }
+    var creator: CreatorResponse? { return rawCreator }
     
     init?(remote: PostDetailResponseRemote?) {
-        let post = PostContentLocal(remote: remote?.rawPost)
-        guard let postId = post.id else { return nil }
+        guard let postId = remote?.rawPost?.id else { return nil }
+        let post = PostContentResponseLocal(remote: remote?.rawPost)
         
         self.postId = postId
         self.rawPost = post
-        self.rawCreator = CreatorResponseLocal(remote: remote?.rawCreator)
-        self.rawCommunity = CommunityResponseLocal(remote: remote?.rawCommunity)
         self.creatorBannedFromCommunity = remote?.creatorBannedFromCommunity
         self.counts = remote?.counts
         self.subscribed = remote?.subscribed

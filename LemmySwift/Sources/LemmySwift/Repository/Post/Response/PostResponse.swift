@@ -7,21 +7,21 @@ public protocol PostResponse {
     var crossPosts: [any PostDetailResponse]? { get }
 }
 
-public struct PostResponseRemote: PostResponse, Decodable {
-    public var rawPostDetails: PostDetailResponseRemote?
-    public var communityDetails: CommunityOverviewResponse?
-    public var rawModerators: [CreatorResponseRemote]?
-    public var rawCrossPosts: [PostDetailResponseRemote]?
+struct PostResponseRemote: PostResponse, Decodable {
+    var rawPostDetails: PostDetailResponseRemote?
+    var communityDetails: CommunityOverviewResponse?
+    var rawModerators: [CreatorResponseRemote]?
+    var rawCrossPosts: [PostDetailResponseRemote]?
     
-    public var moderators: [CreatorResponse]? {
+    var moderators: [CreatorResponse]? {
         return rawModerators
     }
     
-    public var postDetails: (PostDetailResponse)? {
+    var postDetails: (PostDetailResponse)? {
         return rawPostDetails
     }
     
-    public var crossPosts: [PostDetailResponse]? {
+    var crossPosts: [PostDetailResponse]? {
         return rawCrossPosts
     }
     

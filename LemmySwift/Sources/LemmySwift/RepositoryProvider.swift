@@ -3,17 +3,13 @@ import SwiftData
 
 public protocol RepositoryProviderType {
     func inject() -> CommunityRepositoryType
-    func inject() -> any PostRepositoryType
+    func inject() -> PostRepositoryType
+    func inject() -> CommentRepositoryType
 }
 
 public class RepositoryProvider: RepositoryProviderType {
     private let domain: URL
     private let urlSession: URLSession
-    
-    lazy var container: ModelContainer? = {
-        let container = try? ModelContainer(for: PostDetailResponseLocal.self)
-        return container
-    }()
     
     private var postContext: ModelContext?
     
@@ -21,8 +17,10 @@ public class RepositoryProvider: RepositoryProviderType {
         domain = URL(string: "https://lemmy.world/api/v3/")!
         urlSession = URLSession.shared
         
-        if let container = self.container {
-            postContext = ModelContext(container)
+        let container = try? ModelContainer(for: PostDetailResponseLocal.self)
+        if let _container = container {
+            postContext = ModelContext(_container)
+            postContext?.autosaveEnabled = true
         }
     }
     
@@ -31,9 +29,15 @@ public class RepositoryProvider: RepositoryProviderType {
         return CommunityRepositoryMain(remote: remote)
     }
     
-    public func inject() -> any PostRepositoryType {
+    public func inject() -> PostRepositoryType {
         let remote = PostRepositoryRemote(domain: domain, urlSession: urlSession)
         let local = PostRepositoryLocal(context: postContext)
         return PostRepositoryMain(remote: remote, local: local)
+    }
+    
+    public func inject() -> CommentRepositoryType {
+        let remote = CommentRepositoryRemote(domain: domain, urlSession: urlSession)
+        let local = CommentRepositoryLocal(context: postContext)
+        return CommentRepositoryMain(remote: remote, local: local)
     }
 }

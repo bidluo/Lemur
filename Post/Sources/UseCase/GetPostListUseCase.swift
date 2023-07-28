@@ -18,8 +18,9 @@ class GetPostListUseCase: UseCaseStreamType {
     func call(input: Void) -> AsyncThrowingStream<Result, Error> {
         let stream = repository.getPosts()
         
-        return mapAsyncStream(stream) { postList -> Result in
-            let posts = postList.posts?.compactMap { post in
+        return mapAsyncStream(stream) { result -> Result in
+            guard case let .loaded(postList, source) = result else { return Result(posts: [])}
+            let posts = postList?.posts?.compactMap { post in
                 return try? PostSummary(post: post)
             } ?? []
             

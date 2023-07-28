@@ -13,7 +13,7 @@ public protocol CreatorResponse {
     var botAccount: Bool? { get }
     var instanceID: Int? { get }
     var displayName: String? { get }
-    var avatar: String? { get }
+    var avatar: URL? { get }
     var bio: String? { get }
     var banner: String? { get }
 }
@@ -27,7 +27,7 @@ public struct CreatorResponseRemote: CreatorResponse, Codable {
     public let local, deleted, admin, botAccount: Bool?
     public let instanceID: Int?
     public let displayName: String?
-    public let avatar: String?
+    public let avatar: URL?
     public let bio: String?
     public let banner: String?
     
@@ -43,8 +43,8 @@ public struct CreatorResponseRemote: CreatorResponse, Codable {
 }
 
 @Model
-public class CreatorResponseLocal: CreatorResponse {
-    public var id: Int?
+class CreatorResponseLocal: CreatorResponse {
+    @Attribute(.unique) public var id: Int?
     public var name: String?
     public var banned: Bool?
     public var published: String?
@@ -55,9 +55,12 @@ public class CreatorResponseLocal: CreatorResponse {
     public var botAccount: Bool?
     public var instanceID: Int?
     public var displayName: String?
-    public var avatar: String?
+    public var avatar: URL?
     public var bio: String?
     public var banner: String?
+    
+    @Relationship(inverse: \PostDetailResponseLocal.rawCreator) var posts: [PostDetailResponseLocal]? = []
+    @Relationship(inverse: \CommentDetailResponseLocal.rawCreator) var comments: [CommentDetailResponseLocal]? = []
     
     public init(remote: CreatorResponseRemote?) {
         self.id = remote?.id

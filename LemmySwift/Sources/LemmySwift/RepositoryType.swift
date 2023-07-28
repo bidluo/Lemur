@@ -24,6 +24,7 @@ extension RepositoryType {
                     throw DataFailure.invalidResponse
                 }
                 
+                // TODO: Finish earlier if remote never returns
                 continuation.finish()
             }
         }
