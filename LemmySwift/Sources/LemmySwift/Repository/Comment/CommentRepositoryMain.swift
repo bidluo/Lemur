@@ -19,12 +19,12 @@ public class CommentRepositoryMain: CommentRepositoryType, RepositoryType {
             await self?.local.getComments(postId: postId)
         } remoteDataSource: { [weak self] in
             try await self?.remote.getComments(postId: postId).comments
-        } transform: { local, remote in
-            if let _remote = remote {
-                await self.local.saveComments(comments: _remote)
+        } transform: { [weak local] localResponse, remoteResponse in
+            if let _remoteResponse = remoteResponse {
+                await local?.saveComments(comments: _remoteResponse)
             }
             
-            return (remote ?? local) ?? []
+            return (remoteResponse ?? localResponse) ?? []
         }
     }
 }

@@ -19,15 +19,16 @@ public class PostRepositoryMain: PostRepositoryType, RepositoryType {
         return fetchFromSources(
             localDataSource: local.getPosts,
             remoteDataSource: remote.getPosts,
-            transform: { local, remote in
-                if let _remotePosts = remote?.rawPosts {
-                    await self.local.savePosts(posts: _remotePosts)
-                }
-                if remote == nil {
-                    return .loaded(local, .local)
+            transform: { [weak local] localResponse, remoteResponse in
+                if let _remotePosts = remoteResponse?.rawPosts {
+                    await local?.savePosts(posts: _remotePosts)
                 }
                 
-                return .loaded(remote, .remote)
+                if remoteResponse == nil {
+                    return .loaded(localResponse, .local)
+                }
+                
+                return .loaded(remoteResponse, .remote)
             }
         )
     }
@@ -37,19 +38,12 @@ public class PostRepositoryMain: PostRepositoryType, RepositoryType {
             await self?.local.getPost(id: id)
         } remoteDataSource: { [weak self] in
             try await self?.remote.getPost(id: id).rawPostDetails
-        } transform: { local, remote in
-            if let _remote = remote {
-                await self.local.savePosts(posts: [_remote])
+        } transform: { [weak local] localResponse, remoteResponse in
+            if let _remote = remoteResponse {
+                await local?.savePosts(posts: [_remote])
             }
-            return remote ?? local
+            
+            return remoteResponse ?? localResponse
         }
     }
-}
-
-public enum SourcedResult<T> {
-    case loaded(T?, DataSource)
-}
-
-public enum DataSource {
-    case local, remote
 }
