@@ -1,12 +1,11 @@
 import Foundation
-import SwiftData
 
 public struct CommunityListResponse: Decodable {
     public let communities: [CommunityOverviewResponse]?
 }
 
 public struct CommunityOverviewResponse: Decodable {
-    public let community: CommunityResponse?
+    public let community: CommunityResponseRemote?
     public let subscribed: SubscribedResponse?
     public let blocked: Bool?
     public let counts: CommunityCountsResponse?

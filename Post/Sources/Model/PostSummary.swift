@@ -7,11 +7,11 @@ struct PostSummary {
     let title: String
     let thumbnail: URL?
     let body: String?
-    let creatorId: Int
-    let creatorName: String
+    let creatorId: Int?
+    let creatorName: String?
     let creatorThumbnail: URL?
-    let communityId: Int
-    let communityName: String
+    let communityId: Int?
+    let communityName: String?
     let communityThumbnail: URL?
     let score: String
     
@@ -27,9 +27,6 @@ struct PostSummary {
         let creator = post?.creator
         let community = post?.community
         
-        guard let _creatorId = creator?.id else { throw Failure.invalidCreatorId }
-        guard let _communityId = community?.id else { throw Failure.invalidCommunityId }
-        
         self.id = id
         self.title = postContent.name ?? ""
         
@@ -37,11 +34,11 @@ struct PostSummary {
         // Would have to check if link is a picture or not
         self.thumbnail = postContent.thumbnailURL
         self.body = postContent.body
-        self.creatorId = _creatorId
-        self.creatorName = creator?.name ?? ""
+        self.creatorId = creator?.id
+        self.creatorName = creator?.name
         self.creatorThumbnail = creator?.avatar
-        self.communityId = _communityId
-        self.communityName = community?.name ?? ""
+        self.communityId = community?.id
+        self.communityName = community?.name
         self.communityThumbnail = community?.icon
         self.score = post?.counts?.score?.formatted() ?? ""
     }

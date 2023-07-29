@@ -1,22 +1,51 @@
 import Foundation
+import SwiftData
 
-public struct PostContentResponse: Decodable {
-    public let id: Int?
-    public let name: String?
-    public let url: URL?
-    public let body: String?
-    public let creatorID, communityID: Int?
-    public let removed, locked: Bool?
-    public let published: String?
-    public let deleted, nsfw: Bool?
-    public let thumbnailURL: URL?
-    public let apID: String?
-    public let local: Bool?
-    public let languageID: Int?
-    public let featuredCommunity, featuredLocal: Bool?
+public protocol PostContentResponse {
+    var id: Int? { get }
+    var name: String? { get }
+    var url: URL? { get }
+    var body: String? { get }
+    var creatorID: Int? { get }
+    var communityID: Int? { get }
+    var removed: Bool? { get }
+    var locked: Bool? { get }
+    var published: String? { get }
+    var deleted: Bool? { get }
+    var nsfw: Bool? { get }
+    var thumbnailURL: URL? { get }
+    var apID: String? { get }
+    var local: Bool? { get }
+    var languageID: Int? { get }
+    var featuredCommunity: Bool? { get }
+    var featuredLocal: Bool? { get }
     
-    public let embedTitle, embedDescription: String?
-    public let updated: String?
+    var embedTitle: String? { get }
+    var embedDescription: String? { get }
+    var updated: String? { get }
+}
+
+public struct PostContentResponseRemote: PostContentResponse, Decodable {
+    public var id: Int?
+    public var name: String?
+    public var url: URL?
+    public var body: String?
+    public var creatorID: Int?
+    public var communityID: Int?
+    public var removed: Bool?
+    public var locked: Bool?
+    public var published: String?
+    public var deleted: Bool?
+    public var nsfw: Bool?
+    public var thumbnailURL: URL?
+    public var apID: String?
+    public var local: Bool?
+    public var languageID: Int?
+    public var featuredCommunity: Bool?
+    public var featuredLocal: Bool?
+    public var embedTitle: String?
+    public var embedDescription: String?
+    public var updated: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, url, body
@@ -32,5 +61,54 @@ public struct PostContentResponse: Decodable {
         case embedTitle = "embed_title"
         case embedDescription = "embed_description"
         case updated
+    }
+}
+
+@Model
+class PostContentResponseLocal: PostContentResponse {
+    public var id: Int?
+    public var name: String?
+    public var url: URL?
+    public var body: String?
+    public var creatorID: Int?
+    public var communityID: Int?
+    public var removed: Bool?
+    public var locked: Bool?
+    public var published: String?
+    public var deleted: Bool?
+    public var nsfw: Bool?
+    public var thumbnailURL: URL?
+    public var apID: String?
+    public var local: Bool?
+    public var languageID: Int?
+    public var featuredCommunity: Bool?
+    public var featuredLocal: Bool?
+    public var embedTitle: String?
+    public var embedDescription: String?
+    public var updated: String?
+    
+    @Relationship(.cascade, inverse: \CommentDetailResponseLocal.rawPost) var comments: [CommentDetailResponseLocal]? = []
+    
+    init(remote: PostContentResponseRemote?) {
+        self.id = remote?.id
+        self.name = remote?.name
+        self.url = remote?.url
+        self.body = remote?.body
+        self.creatorID = remote?.creatorID
+        self.communityID = remote?.communityID
+        self.removed = remote?.removed
+        self.locked = remote?.locked
+        self.published = remote?.published
+        self.deleted = remote?.deleted
+        self.nsfw = remote?.nsfw
+        self.thumbnailURL = remote?.thumbnailURL
+        self.apID = remote?.apID
+        self.local = remote?.local
+        self.languageID = remote?.languageID
+        self.featuredCommunity = remote?.featuredCommunity
+        self.featuredLocal = remote?.featuredLocal
+        self.embedTitle = remote?.embedTitle
+        self.embedDescription = remote?.embedDescription
+        self.updated = remote?.updated
     }
 }

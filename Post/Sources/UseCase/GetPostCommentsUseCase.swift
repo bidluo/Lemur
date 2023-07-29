@@ -3,9 +3,8 @@ import Common
 import LemmySwift
 import Factory
 
-class GetPostCommentsUseCase: UseCaseType {
-    
-    @Injected(\.postRepository) private var repository: PostRepositoryType
+class GetPostCommentsUseCase: UseCaseStreamType {
+    @Injected(\.commentRepository) private var repository: CommentRepositoryType
     
     struct Input {
         public let postId: Int
@@ -18,14 +17,22 @@ class GetPostCommentsUseCase: UseCaseType {
     required init() {
     }
     
-    func call(input: Input) async throws -> Result {
-        let commentsResponse = try await repository.getPostComments(postId: input.postId).comments
+    func call(input: Input) -> AsyncThrowingStream<Result, Error>  {
+        let commentsResponse = repository.getComments(postId: input.postId)
+        
+        return mapAsyncStream(commentsResponse, transform: { response in
+            let comments = self.handleComments(comments: response)
+            return Result(comments: comments)
+        })
+    }
+    
+    private func handleComments(comments: [CommentDetailResponse]) -> [CommentContent] {
         // A dictionary that maps from parent id to a list of child comments.
         var childrenDict: [Int: [CommentContent]] = [:]
         
         var commentsDict: [Int: CommentContent] = [:]
         
-        commentsResponse?.forEach { commentResponse in
+        comments.forEach { commentResponse in
             let commentContent = commentResponse.comment
             guard
                 let commentId = commentContent?.id,
@@ -41,7 +48,7 @@ class GetPostCommentsUseCase: UseCaseType {
                 creatorName: creator?.name ?? "",
                 creatorIsLocal: creator?.local ?? false,
                 publishDate: commentResponse.counts?.published,
-                creatorHome: creator?.actorID?.host(),
+                creatorHome: nil,
                 score: commentResponse.counts?.score,
                 parentId: nil,
                 children: []
@@ -71,7 +78,6 @@ class GetPostCommentsUseCase: UseCaseType {
             return result
         }
         
-        return Result(comments: buildTree(0) ?? [])
+        return buildTree(0) ?? []
     }
-
 }

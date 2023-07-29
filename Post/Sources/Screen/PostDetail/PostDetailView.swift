@@ -32,7 +32,7 @@ struct PostDetailView: View {
         .environment(\.defaultMinListHeaderHeight, .zero)
         .listStyle(.grouped)
         .task {
-            try! await store.load()
+            try? await store.load()
         }
     }
 }

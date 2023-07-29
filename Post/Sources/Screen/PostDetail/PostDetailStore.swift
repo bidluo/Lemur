@@ -6,10 +6,10 @@ import Observation
 class PostDetailStore {
     
     @ObservationIgnored
-    @UseCase private var getPostUseCase: GetPostUseCase
+    @UseCaseStream private var getPostUseCase: GetPostUseCase
     
     @ObservationIgnored
-    @UseCase private var getCommentsUseCase: GetPostCommentsUseCase
+    @UseCaseStream private var getCommentsUseCase: GetPostCommentsUseCase
     
     var post: PostSummary?
     var comments: [CommentContent] = []
@@ -21,9 +21,19 @@ class PostDetailStore {
     }
     
     func load() async throws {
-        async let _post = getPostUseCase.call(input: .init(id: postId))
-        async let _comments = getCommentsUseCase.call(input: .init(postId: postId))
-        self.post = try await _post
-        self.comments = try await _comments.comments
+        try await withThrowingDiscardingTaskGroup { [weak self] group in
+            guard let self else { return }
+            group.addTask {
+                for try await post in self.getPostUseCase.call(input: .init(id: self.postId)) {
+                    self.post = post
+                }
+            }
+            
+            group.addTask {
+                for try await comments in self.getCommentsUseCase.call(input: .init(postId: self.postId)) {
+                    self.comments = comments.comments
+                }
+            }
+        }
     }
 }

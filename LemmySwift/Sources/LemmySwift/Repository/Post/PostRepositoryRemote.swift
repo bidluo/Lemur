@@ -1,6 +1,6 @@
 import Foundation
 
-public class PostRepositoryRemote: PostRepositoryType, NetworkType {
+public class PostRepositoryRemote: NetworkType {
     var urlSession: URLSession
     var domain: URL
     var asyncActor: AsyncDataTaskActor
@@ -11,15 +11,15 @@ public class PostRepositoryRemote: PostRepositoryType, NetworkType {
         self.asyncActor = AsyncDataTaskActor()
     }
     
-    public func getPosts() async throws -> PostListResponse {
+    func getPosts() async throws -> PostListResponseRemote {
         return try await perform(http: PostSpec.posts)
     }
     
-    public func getPost(id: Int) async throws -> PostResponse {
+    func getPost(id: Int) async throws -> PostResponseRemote {
         return try await perform(http: PostSpec.post(id))
     }
     
-    public func getPostComments(postId: Int) async throws -> CommentListResponse {
+    func getPostComments(postId: Int) async throws -> CommentListResponse {
         return try await perform(http: PostSpec.postComments(postId))
     }
 }

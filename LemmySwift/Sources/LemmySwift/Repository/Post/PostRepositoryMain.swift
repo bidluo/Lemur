@@ -1,28 +1,49 @@
 import Foundation
 
 public protocol PostRepositoryType {
-    func getPosts() async throws -> PostListResponse
-    func getPost(id: Int) async throws -> PostResponse
-    func getPostComments(postId: Int) async throws -> CommentListResponse
+    func getPosts() -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error>
+    func getPost(id: Int) -> AsyncThrowingStream<PostDetailResponse, Error>
 }
 
-public class PostRepositoryMain: PostRepositoryType {
+public class PostRepositoryMain: PostRepositoryType, RepositoryType {
     
     private let remote: PostRepositoryRemote
+    private let local: PostRepositoryLocal
     
-    init(remote: PostRepositoryRemote) {
+    init(remote: PostRepositoryRemote, local: PostRepositoryLocal) {
         self.remote = remote
+        self.local = local
     }
     
-    public func getPosts() async throws -> PostListResponse {
-        return try await remote.getPosts()
+    public func getPosts() -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error> {
+        return fetchFromSources(
+            localDataSource: local.getPosts,
+            remoteDataSource: remote.getPosts,
+            transform: { [weak local] localResponse, remoteResponse in
+                if let _remotePosts = remoteResponse?.rawPosts {
+                    await local?.savePosts(posts: _remotePosts)
+                }
+                
+                if remoteResponse == nil {
+                    return .loaded(localResponse, .local)
+                }
+                
+                return .loaded(remoteResponse, .remote)
+            }
+        )
     }
     
-    public func getPost(id: Int) async throws -> PostResponse {
-        return try await remote.getPost(id: id)
-    }
-    
-    public func getPostComments(postId: Int) async throws -> CommentListResponse {
-        return try await remote.getPostComments(postId: postId)
+    public func getPost(id: Int) -> AsyncThrowingStream<PostDetailResponse, Error> {
+        return fetchFromSources { [weak self] in
+            await self?.local.getPost(id: id)
+        } remoteDataSource: { [weak self] in
+            try await self?.remote.getPost(id: id).rawPostDetails
+        } transform: { [weak local] localResponse, remoteResponse in
+            if let _remote = remoteResponse {
+                await local?.savePosts(posts: [_remote])
+            }
+            
+            return remoteResponse ?? localResponse
+        }
     }
 }

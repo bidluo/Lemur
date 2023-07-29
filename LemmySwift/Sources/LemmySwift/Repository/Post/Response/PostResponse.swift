@@ -1,15 +1,34 @@
 import Foundation
 
-public struct PostResponse: Decodable {
-    public let postDetails: PostDetailResponse?
-    public let communityDetails: CommunityOverviewResponse?
-    public let moderators: [ModeratorResponse]?
-    public let crossPosts: [PostDetailResponse]?
+public protocol PostResponse {
+    var postDetails: (any PostDetailResponse)? { get }
+    var communityDetails: CommunityOverviewResponse? { get }
+    var moderators: [any CreatorResponse]? { get }
+    var crossPosts: [any PostDetailResponse]? { get }
+}
+
+struct PostResponseRemote: PostResponse, Decodable {
+    var rawPostDetails: PostDetailResponseRemote?
+    var communityDetails: CommunityOverviewResponse?
+    var rawModerators: [CreatorResponseRemote]?
+    var rawCrossPosts: [PostDetailResponseRemote]?
+    
+    var moderators: [CreatorResponse]? {
+        return rawModerators
+    }
+    
+    var postDetails: (PostDetailResponse)? {
+        return rawPostDetails
+    }
+    
+    var crossPosts: [PostDetailResponse]? {
+        return rawCrossPosts
+    }
     
     enum CodingKeys: String, CodingKey {
-        case postDetails = "post_view"
+        case rawPostDetails = "post_view"
         case communityDetails = "community_view"
-        case moderators
-        case crossPosts = "cross_posts"
+        case rawModerators = "moderators"
+        case rawCrossPosts = "cross_posts"
     }
 }

@@ -6,12 +6,6 @@ protocol NetworkType {
     var asyncActor: AsyncDataTaskActor { get }
 }
 
-enum NetworkFailure: LocalizedError {
-    case invalidResponse
-    case unauthorised, forbidden, notFound, unknown
-}
-
-
 extension DateFormatter {
     public static var iso8601Full: DateFormatter = {
         let formatter = DateFormatter()
@@ -64,6 +58,11 @@ extension JSONDecoder.DateDecodingStrategy {
 }
 
 extension NetworkType {
+    
+    func perform<T>(http: Spec, for: T.Type) async throws -> T where T: Decodable {
+        return try await perform(http: http)
+    }
+    
     func perform<T>(http: Spec) async throws -> T where T: Decodable {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.dateDecodingStrategy = .iso8601Multi

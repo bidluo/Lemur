@@ -9,7 +9,7 @@ struct PostView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Size.small.rawValue) {
-            Text(post.communityName)
+            Text(post.communityName ?? "")
                 .font(.subheadingSemiBold)
                 .fontDesign(.rounded)
                 .padding([.horizontal, .top], .medium)
@@ -34,7 +34,7 @@ struct PostView: View {
             .padding(.bottom, .small)
             
             HStack {
-                Text(post.creatorName)
+                Text(post.creatorName ?? "")
                     .font(.subheadingBold)
                     .fontDesign(.rounded)
                 Spacer()

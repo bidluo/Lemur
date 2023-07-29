@@ -3,7 +3,7 @@ import Common
 import LemmySwift
 import Factory
 
-class GetPostUseCase: UseCaseType {
+class GetPostUseCase: UseCaseStreamType {
     
     @Injected(\.postRepository) private var repository: PostRepositoryType
     
@@ -21,9 +21,11 @@ class GetPostUseCase: UseCaseType {
     
     required init() {}
     
-    func call(input: Input) async throws -> Result {
-        let post = try await repository.getPost(id: input.id)
+    func call(input: Input) -> AsyncThrowingStream<Result, Error> {
+        let stream = repository.getPost(id: input.id)
         
-        return try Result(post: post.postDetails)
+        return mapAsyncStream(stream) { post -> PostSummary in
+            return try PostSummary(post: post)
+        }
     }
 }
