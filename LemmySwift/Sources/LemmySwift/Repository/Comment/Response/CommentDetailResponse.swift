@@ -42,7 +42,7 @@ public struct CommentDetailResponseRemote: CommentDetailResponse, Decodable {
 @Model
 class CommentDetailResponseLocal: CommentDetailResponse {
     @Attribute(.unique) let commentId: Int
-    @Relationship(.cascade) public var rawComment: CommentContentResponseLocal?
+    public var rawComment: CommentContentResponseLocal?
     @Relationship public var rawCreator: CreatorResponseLocal?
     @Relationship public var rawPost: PostContentResponseLocal?
     @Transient public var counts: CommentCounts?
@@ -60,9 +60,14 @@ class CommentDetailResponseLocal: CommentDetailResponse {
     init?(remote: CommentDetailResponseRemote?) {
         guard let commentId = remote?.rawComment?.id else { return nil }
         let comment = CommentContentResponseLocal(remote: remote?.rawComment)
+        self.rawComment = comment
         
         self.commentId = commentId
-        self.rawComment = comment
+        
+        self.update(with: remote)
+    }
+    
+    func update(with remote: CommentDetailResponseRemote?) {
         self.counts = remote?.counts
         self.creatorBannedFromCommunity = remote?.creatorBannedFromCommunity
         self.subscribed = remote?.subscribed

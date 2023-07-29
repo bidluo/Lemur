@@ -1,11 +1,11 @@
 import Foundation
 
 public protocol PostRepositoryType {
-    func getPosts() -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error>
-    func getPost(id: Int) -> AsyncThrowingStream<PostDetailResponse, Error>
+    func getPosts(sort: PostSort) async -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error>
+    func getPost(id: Int) async -> AsyncThrowingStream<PostDetailResponse, Error>
 }
 
-public class PostRepositoryMain: PostRepositoryType, RepositoryType {
+public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
     
     private let remote: PostRepositoryRemote
     private let local: PostRepositoryLocal
@@ -15,10 +15,12 @@ public class PostRepositoryMain: PostRepositoryType, RepositoryType {
         self.local = local
     }
     
-    public func getPosts() -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error> {
+    public func getPosts(sort: PostSort) -> AsyncThrowingStream<SourcedResult<PostListResponse>, Error> {
         return fetchFromSources(
             localDataSource: local.getPosts,
-            remoteDataSource: remote.getPosts,
+            remoteDataSource: { [weak self] in
+                try await self?.remote.getPosts(sort: sort)
+            },
             transform: { [weak local] localResponse, remoteResponse in
                 if let _remotePosts = remoteResponse?.rawPosts {
                     await local?.savePosts(posts: _remotePosts)

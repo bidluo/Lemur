@@ -6,13 +6,13 @@ public protocol UseCaseStreamType {
     
     init()
     
-    func call(input: Input) -> AsyncThrowingStream<Result, Error>
+    func call(input: Input) async -> AsyncThrowingStream<Result, Error>
 }
 
 extension UseCaseStreamType where Input == Void {
     @discardableResult
-    public func call() -> AsyncThrowingStream<Result, Error> {
-        self.call(input: ())
+    public func call() async -> AsyncThrowingStream<Result, Error> {
+        await self.call(input: ())
     }
 }
 

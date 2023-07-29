@@ -8,17 +8,20 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     
     struct Input {
         public let postId: Int
+        public let sort: Sort
     }
     
     struct Result {
         public let comments: [CommentContent]
     }
     
+    typealias Sort = LemmySwift.CommentSort
+    
     required init() {
     }
     
-    func call(input: Input) -> AsyncThrowingStream<Result, Error>  {
-        let commentsResponse = repository.getComments(postId: input.postId)
+    func call(input: Input) async -> AsyncThrowingStream<Result, Error>  {
+        let commentsResponse = await repository.getComments(postId: input.postId, sort: input.sort)
         
         return mapAsyncStream(commentsResponse, transform: { response in
             let comments = self.handleComments(comments: response)

@@ -11,7 +11,7 @@ public class CommentRepositoryRemote: NetworkType {
         self.asyncActor = AsyncDataTaskActor()
     }
     
-    func getComments(postId: Int) async throws -> CommentListResponse {
-        return try await perform(http: CommentSpec.comments(postId))
+    func getComments(postId: Int, sort: CommentSort) async throws -> CommentListResponse {
+        return try await perform(http: CommentSpec.comments(postId, sort))
     }
 }

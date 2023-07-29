@@ -31,6 +31,29 @@ struct PostDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .environment(\.defaultMinListHeaderHeight, .zero)
         .listStyle(.grouped)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing, content: {
+                Menu(content: {
+                    ForEach(store.sortItems, id: \.self) { item in
+                        Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                    }
+                }, label: {
+                    switch store.selectedSort {
+                    case .hot: Image(systemName: "flame.fill")
+                    case .top: Image(systemName: "crown.fill")
+                    case .new: Image(systemName: "hourglass.tophalf.filled")
+                    case .old: Image(systemName: "hourglass.bottomhalf.filled")
+                    }
+                })
+            })
+        }
+        .onChange(of: store.selectedSort, { old, new in
+            if new != old {
+                Task {
+                    try? await store.loadComments()
+                }
+            }
+        })
         .task {
             try? await store.load()
         }

@@ -27,6 +27,40 @@ struct PostListView: View {
                     .listRowSeparator(.hidden, edges: .all)
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing, content: {
+                    Menu(content: {
+                        ForEach(store.mainItems, id: \.self) { item in
+                            Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                        }
+                        
+                        Menu(content: {
+                            ForEach(store.topItems, id: \.self) { item in
+                                Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                            }
+                        }, label: {
+                            Text("Top...")
+                        })
+                        
+                        Menu(content: {
+                            ForEach(store.commentItems, id: \.self) { item in
+                                Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                            }
+                        }, label: {
+                            Text("Comments...")
+                        })
+                    }, label: {
+                        switch store.selectedSort {
+                        case .hot: Image(systemName: "flame.fill")
+                        case .active: Image(systemName: "bolt.fill")
+                        case .new: Image(systemName: "hourglass.tophalf.filled")
+                        case .old: Image(systemName: "hourglass.bottomhalf.filled")
+                        case .mostComments, .newComments: Image(systemName: "bubble.left.and.bubble.right.fill")
+                        default: Image(systemName: "crown.fill")
+                        }
+                    })
+                })
+            }
             .transition(.opacity)
             .navigationTitle(Text("Lemur"))
             .listStyle(.grouped)
@@ -34,6 +68,13 @@ struct PostListView: View {
                 PostDetailView(id: postId)
             })
         }
+        .onChange(of: store.selectedSort, { old, new in
+            if old != new {
+                Task {
+                    try! await store.load()
+                }
+            }
+        })
         .task {
             try! await store.load()
         }

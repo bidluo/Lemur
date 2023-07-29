@@ -7,6 +7,9 @@
     "%@" : {
 
     },
+    "Comments..." : {
+
+    },
     "Lemur" : {
 
     },
@@ -20,6 +23,35 @@
           }
         }
       }
+    },
+    "Posts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d post"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%d posts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Top" : {
+      "extractionState" : "manual"
+    },
+    "Top..." : {
+
     }
   },
   "version" : "1.0"
