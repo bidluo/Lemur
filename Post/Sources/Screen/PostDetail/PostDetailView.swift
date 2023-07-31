@@ -29,7 +29,8 @@ struct PostDetailView: View {
             .listRowInsets(EdgeInsets(.all, size: .zero))
         }
         .navigationBarTitleDisplayMode(.inline)
-        .environment(\.defaultMinListHeaderHeight, .zero)
+//        .environment(\.defaultMinListHeaderHeight, .zero)
+        .listSectionSpacing(.compact)
         .listStyle(.grouped)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing, content: {

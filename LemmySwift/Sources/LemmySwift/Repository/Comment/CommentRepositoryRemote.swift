@@ -5,10 +5,10 @@ public class CommentRepositoryRemote: NetworkType {
     var domain: URL
     var asyncActor: AsyncDataTaskActor
     
-    init(domain: URL, urlSession: URLSession) {
+    init(domain: URL, urlSession: URLSession, keychain: KeychainType) {
         self.domain = domain
         self.urlSession = urlSession
-        self.asyncActor = AsyncDataTaskActor()
+        self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
     func getComments(postId: Int, sort: CommentSort) async throws -> CommentListResponse {

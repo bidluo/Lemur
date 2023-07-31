@@ -11,7 +11,7 @@ let project = Project(
             platform: .iOS,
             product: .framework,
             bundleId: "me.liaw.LemmySwift",
-            deploymentTarget: .iOS(targetVersion: "13.0", devices: [.iphone, .ipad]),
+            deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
             sources: "Sources/LemmySwift/**"
         )
     ]

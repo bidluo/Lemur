@@ -5,12 +5,22 @@ import SwiftUI
 
 extension Container {
     var repositoryProvider: Factory<RepositoryProviderType> {
-        Factory(self) { RepositoryProvider() }.singleton
+        Factory(self) { RepositoryProvider(keychain: Keychain()) }.singleton
+    }
+}
+
+public extension Container {
+    var keychain: Factory<KeychainType> {
+        Factory(self) { Keychain() }.singleton
     }
 }
 
 public extension Container {
     var postRepository: Factory<PostRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var authenticationRepository: Factory<AuthenticationRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
     

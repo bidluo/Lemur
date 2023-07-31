@@ -52,8 +52,10 @@ extension JSONDecoder.DateDecodingStrategy {
             return date
         }
         
-        throw DecodingError.dataCorruptedError(in: container,
-                                               debugDescription: "Cannot decode date string \(dateString)")
+        throw DecodingError.dataCorruptedError(
+            in: container,
+            debugDescription: "Cannot decode date string \(dateString)"
+        )
     }
 }
 
@@ -129,9 +131,11 @@ actor AsyncDataTaskActor {
 
     private var activeTasks = [URLRequest: TaskEntry]()
     private let taskLifetime: TimeInterval
+    private let keychain: KeychainType
 
-    init(taskLifetime: TimeInterval = 120) {
+    init(keychain: KeychainType, taskLifetime: TimeInterval = 120) {
         self.taskLifetime = taskLifetime
+        self.keychain = keychain
     }
 
     /// Asynchronously performs a network request using the provided `URLRequest` and `URLSession`.
@@ -154,13 +158,21 @@ actor AsyncDataTaskActor {
     ///   thrown depends on the nature of the failure.
     func perform(request: URLRequest, urlSession: URLSession) async throws -> DataResponse {
         cleanExpiredTasks()
+        
 
         if let existingTask = activeTasks[request]?.task {
             return try await existingTask.value
         }
 
         let task = Task<DataResponse, Error> {
-            let (data, response) = try await urlSession.data(for: request)
+            var authedRequest = request
+            if let token = try? keychain.getToken() {
+                authedRequest.url?.append(queryItems: [
+                    .init(name: "auth", value: token)
+                ])
+            }
+            
+            let (data, response) = try await urlSession.data(for: authedRequest)
             return (data, response)
         }
 

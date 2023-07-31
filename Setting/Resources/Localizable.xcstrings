@@ -1,13 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Communities" : {
-
-    },
-    "Community List" : {
-
-    },
-    "Home" : {
+    "Password" : {
 
     },
     "ScreenTItle" : {
@@ -21,7 +15,13 @@
         }
       }
     },
-    "Settings" : {
+    "Server address" : {
+
+    },
+    "Sign in" : {
+
+    },
+    "Username or email" : {
 
     }
   },

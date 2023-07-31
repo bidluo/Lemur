@@ -45,3 +45,16 @@ enum HTTPMethod {
     }
 }
 
+struct JSON {
+    static func encode<T>(obj: T) -> Data? where T: Encodable {
+        let encoder = JSONEncoder()
+        let data = try? encoder.encode(obj)
+        
+        return data
+    }
+    
+    static func encode(obj: [String: Any]) -> Data? {
+        return try? JSONSerialization.data(withJSONObject: obj, options: [])
+    }
+}
+

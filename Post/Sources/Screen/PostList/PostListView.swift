@@ -27,6 +27,7 @@ struct PostListView: View {
                     .listRowSeparator(.hidden, edges: .all)
                 }
             }
+            .listSectionSpacing(.compact)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing, content: {
                     Menu(content: {
