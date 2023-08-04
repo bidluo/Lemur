@@ -2,15 +2,14 @@ import Foundation
 import LemmySwift
 
 struct PostSummary {
-
     let id: Int
     let title: String
     let thumbnail: URL?
     let body: String?
-    let creatorId: Int?
+    var creatorId: Int?
     let creatorName: String?
     let creatorThumbnail: URL?
-    let communityId: Int?
+    var communityId: Int?
     let communityName: String?
     let communityThumbnail: URL?
     let score: String
@@ -21,26 +20,26 @@ struct PostSummary {
         case invalidPost
     }
     
-    init(post: PostDetailResponse?) throws {
-        guard let postContent = post?.post, let id = postContent.id else { throw Failure.invalidPost }
+    init(post: PostDetail?) throws {
+        guard let _post = post else { throw Failure.invalidPost }
         
-        let creator = post?.creator
-        let community = post?.community
+        let creator = _post.creator
+        let community = _post.community
         
-        self.id = id
-        self.title = postContent.name ?? ""
+        self.id = _post.rawId
+        self.title = _post.name ?? ""
         
         // TODO: Post might not have thumbnail, but could be URL (as in the case of imgur links).
         // Would have to check if link is a picture or not
-        self.thumbnail = postContent.thumbnailURL
-        self.body = postContent.body
-        self.creatorId = creator?.id
+        self.thumbnail = _post.thumbnailURL
+        self.body = _post.body
+        self.creatorId = creator?.rawId
         self.creatorName = creator?.name
         self.creatorThumbnail = creator?.avatar
-        self.communityId = community?.id
+        self.communityId = community?.rawId
         self.communityName = community?.name
         self.communityThumbnail = community?.icon
-        self.score = post?.counts?.score?.formatted() ?? ""
+        self.score = post?.score?.formatted() ?? ""
     }
     
     init(

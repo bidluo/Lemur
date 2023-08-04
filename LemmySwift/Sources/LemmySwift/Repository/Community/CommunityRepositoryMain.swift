@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol CommunityRepositoryType {
-    func getCommunities() async throws -> CommunityListResponse
+    func getCommunities() async throws -> [Community]
 }
 
 public class CommunityRepositoryMain: CommunityRepositoryType {
@@ -12,7 +12,7 @@ public class CommunityRepositoryMain: CommunityRepositoryType {
         self.remote = remote
     }
     
-    public func getCommunities() async throws -> CommunityListResponse {
-        return try await remote.getCommunities()
+    public func getCommunities() async throws -> [Community] {
+        return []
     }
 }

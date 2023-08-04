@@ -1,22 +1,22 @@
 import Foundation
 
-public struct CommunityListResponse: Decodable {
-    public let communities: [CommunityOverviewResponse]?
+struct CommunityListResponse: Decodable {
+    let communities: [CommunityOverviewResponse]?
 }
 
-public struct CommunityOverviewResponse: Decodable {
-    public let community: CommunityResponseRemote?
-    public let subscribed: SubscribedResponse?
-    public let blocked: Bool?
-    public let counts: CommunityCountsResponse?
+struct CommunityOverviewResponse: Decodable {
+    let community: CommunityResponseRemote?
+    let subscribed: SubscribedResponse?
+    let blocked: Bool?
+    let counts: CommunityCountsResponse?
 }
 
-public struct CommunityCountsResponse: Decodable {
-    public let id, communityID, subscribers, posts: Int?
-    public let comments: Int?
-    public let published: String?
-    public let usersActiveDay, usersActiveWeek, usersActiveMonth, usersActiveHalfYear: Int?
-    public let hotRank: Int?
+struct CommunityCountsResponse: Decodable {
+    let id, communityID, subscribers, posts: Int?
+    let comments: Int?
+    let published: String?
+    let usersActiveDay, usersActiveWeek, usersActiveMonth, usersActiveHalfYear: Int?
+    let hotRank: Int?
 
     enum CodingKeys: String, CodingKey {
         case id

@@ -5,6 +5,7 @@ import Common
 struct PostDetailView: View {
     
     private var store: PostDetailStore
+    private var errorHandler = ErrorHandling()
     private let id: Int
     
     init(id: Int) {
@@ -29,7 +30,6 @@ struct PostDetailView: View {
             .listRowInsets(EdgeInsets(.all, size: .zero))
         }
         .navigationBarTitleDisplayMode(.inline)
-//        .environment(\.defaultMinListHeaderHeight, .zero)
         .listSectionSpacing(.compact)
         .listStyle(.grouped)
         .toolbar {
@@ -50,13 +50,11 @@ struct PostDetailView: View {
         }
         .onChange(of: store.selectedSort, { old, new in
             if new != old {
-                Task {
-                    try? await store.loadComments()
-                }
+                executing(store.loadComments, errorHandler: errorHandler)
             }
         })
-        .task {
-            try? await store.load()
+        .onAppear {
+            executing(store.load, errorHandler: errorHandler)
         }
     }
 }

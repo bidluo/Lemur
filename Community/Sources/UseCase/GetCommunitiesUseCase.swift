@@ -22,8 +22,8 @@ class GetCommunitiesUseCase: UseCaseType {
     func call(input: Void) async throws -> Result {
         let communitiesResponse = try await repository.getCommunities()
         
-        let communities = communitiesResponse.communities?.compactMap { community -> Result.Community? in
-            guard let _community = community.community, let id = _community.title else { return nil }
+        let communities = communitiesResponse.compactMap { community -> Result.Community? in
+            guard let id = community.title else { return nil }
             
             return Result.Community(id: id)
         }

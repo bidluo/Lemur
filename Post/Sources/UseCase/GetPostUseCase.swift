@@ -24,7 +24,7 @@ class GetPostUseCase: UseCaseStreamType {
     func call(input: Input) async -> AsyncThrowingStream<Result, Error> {
         let stream = await repository.getPost(id: input.id)
         
-        return mapAsyncStream(stream) { post -> PostSummary in
+        return await mapAsyncStream(stream) { post -> PostSummary in
             return try PostSummary(post: post)
         }
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-public class CommunityRepositoryRemote: CommunityRepositoryType, NetworkType {
+class CommunityRepositoryRemote: NetworkType {
     var urlSession: URLSession
     var domain: URL
     var asyncActor: AsyncDataTaskActor
@@ -11,7 +11,7 @@ public class CommunityRepositoryRemote: CommunityRepositoryType, NetworkType {
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    public func getCommunities() async throws -> CommunityListResponse {
+    func getCommunities() async throws -> CommunityListResponse {
         return try await perform(http: CommunitySpec.communities)
     }
 }

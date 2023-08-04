@@ -11,7 +11,7 @@ public class PostRepositoryRemote: NetworkType {
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    func getPosts(sort: PostSort) async throws -> PostListResponseRemote {
+    func getPosts(sort: PostSort) async throws -> PostListResponse {
         return try await perform(http: PostSpec.posts(sort))
     }
     

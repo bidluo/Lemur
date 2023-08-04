@@ -17,9 +17,10 @@ extension UseCaseStreamType where Input == Void {
 }
 
 extension UseCaseStreamType {
+    @MainActor
     public func mapAsyncStream<Input, Output>(
         _ stream: AsyncThrowingStream<Input, Error>,
-        transform: @escaping (Input) throws -> Output
+        transform: @MainActor @escaping (Input) throws -> Output
     ) -> AsyncThrowingStream<Output, Error> {
         return AsyncThrowingStream<Output, Error> { continuation in
             Task {

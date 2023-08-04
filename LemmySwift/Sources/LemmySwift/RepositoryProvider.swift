@@ -12,19 +12,16 @@ public class RepositoryProvider: RepositoryProviderType {
     private let domain: URL
     private let urlSession: URLSession
     
-    private var postContext: ModelContext?
+    private var container: ModelContainer
     private let keychain: KeychainType
     
     public init(keychain: KeychainType) {
-        self.domain = URL(string: "http://localhost:8536/api/v3/")!
+        self.domain = URL(string: "https://lemmy.world/api/v3/")!
         self.urlSession = URLSession.shared
         self.keychain = keychain
         
-        let container = try? ModelContainer(for: PostDetailResponseLocal.self)
-        if let _container = container {
-            postContext = ModelContext(_container)
-            postContext?.autosaveEnabled = true
-        }
+        // TODO: Handle migrations
+        container = try! ModelContainer(for: PostDetail.self)
     }
     
     public func inject() -> CommunityRepositoryType {
@@ -34,13 +31,13 @@ public class RepositoryProvider: RepositoryProviderType {
     
     public func inject() -> PostRepositoryType {
         let remote = PostRepositoryRemote(domain: domain, urlSession: urlSession, keychain: keychain)
-        let local = PostRepositoryLocal(context: postContext)
+        let local = PostRepositoryLocal(container: container)
         return PostRepositoryMain(remote: remote, local: local)
     }
     
     public func inject() -> CommentRepositoryType {
         let remote = CommentRepositoryRemote(domain: domain, urlSession: urlSession, keychain: keychain)
-        let local = CommentRepositoryLocal(context: postContext)
+        let local = CommentRepositoryLocal(container: container)
         return CommentRepositoryMain(remote: remote, local: local)
     }
     

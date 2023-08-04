@@ -4,6 +4,7 @@ import Common
 struct PostListView: View {
     
     private var store = PostListStore()
+    private var errorHandler = ErrorHandling()
     
     @State private var navigationPath = NavigationPath()
     @State private var destination: Destination?
@@ -71,13 +72,11 @@ struct PostListView: View {
         }
         .onChange(of: store.selectedSort, { old, new in
             if old != new {
-                Task {
-                    try! await store.load()
-                }
+                executing(store.reload, errorHandler: errorHandler)
             }
         })
-        .task {
-            try! await store.load()
+        .onAppear {
+            executing(store.reload, errorHandler: errorHandler)
         }
     }
 }
