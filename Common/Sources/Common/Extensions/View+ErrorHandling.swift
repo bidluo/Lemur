@@ -2,78 +2,81 @@ import Foundation
 import SwiftUI
 import Observation
 
+struct DebouncingTaskViewModifier<ID: Equatable>: ViewModifier {
+    let id: ID
+    let priority: TaskPriority
+    let duration: Duration?
+    let errorHandler: ErrorHandling
+    let task: @Sendable () async throws -> Void
+    
+    init(
+        id: ID,
+        priority: TaskPriority = .userInitiated,
+        duration: Duration? = nil,
+        errorHandler: ErrorHandling,
+        task: @Sendable @escaping () async throws -> Void
+    ) {
+        self.id = id
+        self.priority = priority
+        self.duration = duration
+        self.errorHandler = errorHandler
+        self.task = task
+    }
+    
+    func body(content: Content) -> some View {
+        content.task(id: id, priority: priority) {
+            do {
+                if let _duration = duration {
+                    try await Task.sleep(for: _duration)
+                }
+                try await task()
+            } catch {
+                switch error {
+                case is CancellationError: break
+                default: errorHandler.handle(error: error)
+                }
+            }
+        }
+    }
+}
+
 public extension View {
-    func executing(
+    func task<ID: Equatable>(
+        id: ID,
+        priority: TaskPriority = .userInitiated,
+        duration: Duration? = nil,
+        errorHandler: ErrorHandling,
+        task: @Sendable @escaping () async throws -> Void
+    ) -> some View {
+        modifier(
+            DebouncingTaskViewModifier(
+                id: id,
+                priority: priority,
+                duration: duration,
+                errorHandler: errorHandler,
+                task: task
+            )
+        )
+    }
+    
+    private func executeAction(
         _ action: @escaping () async throws -> (),
-        errorHandler: ErrorHandling,
-        completion: (() -> ())? = nil
-    ) {
-        self.executing(action: action, errorHandler: errorHandler, completion: completion)
-    }
-    
-    func executing<T>(
-        action: @escaping () async throws -> T,
-        errorHandler: ErrorHandling,
-        completion: ((T) -> ())? = nil
-    ) {
-        Task {
-            do {
-                let value = try await action()
-                DispatchQueue.main.async {
-                    completion?(value)
-                }
-            } catch {
-                errorHandler.handle(error: error)
-            }
-        }
-    }
-    
-    func executing(
-        action: @escaping () async throws -> (),
-        errorHandler: ErrorHandling,
-        completion: (() -> ())? = nil
-    ) {
-        Task {
-            do {
-                try await action()
-                DispatchQueue.main.async {
-                    completion?()
-                }
-            } catch {
-                errorHandler.handle(error: error)
-            }
-        }
-    }
-    
-    func executing(
-        action: @escaping () async throws -> (),
-        errorHandler: ErrorHandling,
-        completion: (() async throws -> ())? = nil
-    ) {
-        Task {
-            do {
-                try await action()
-                try await completion?()
-            } catch {
-                errorHandler.handle(error: error)
-            }
-        }
-    }
-    
-    func executing(
-        _ action: @escaping () async throws -> (),
+        after duration: Duration? = nil,
         errorHandler: ErrorHandling,
         completion: (() -> ())? = nil,
-        catching: @escaping (Error) -> (Bool)
+        catching: ((Error) -> (Bool))? = nil
     ) {
-        Task {
+        Task(priority: .userInitiated) {
             do {
+                if let _duration = duration {
+                    try await Task.sleep(for: _duration)
+                }
                 try await action()
                 DispatchQueue.main.async {
                     completion?()
                 }
             } catch {
-                if catching(error) == false {
+                if catching?(error) == false {
                     errorHandler.handle(error: error)
                 }
             }
@@ -82,22 +85,20 @@ public extension View {
     
     func executing(
         action: @escaping () async throws -> (),
+        after duration: Duration? = nil,
+        errorHandler: ErrorHandling,
+        completion: (() -> ())? = nil
+    ) {
+        executeAction(action, after: duration, errorHandler: errorHandler, completion: completion, catching: nil)
+    }
+    
+    func executing(
+        action: @escaping () async throws -> (),
         errorHandler: ErrorHandling,
         completion: (() -> ())? = nil,
         catching: @escaping (Error) -> (Bool)
     ) {
-        Task {
-            do {
-                try await action()
-                DispatchQueue.main.async {
-                    completion?()
-                }
-            } catch {
-                if catching(error) == false {
-                    errorHandler.handle(error: error)
-                }
-            }
-        }
+        executeAction(action, after: nil, errorHandler: errorHandler, completion: completion, catching: catching)
     }
 }
 

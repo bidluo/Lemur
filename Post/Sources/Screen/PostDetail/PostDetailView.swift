@@ -8,9 +8,9 @@ struct PostDetailView: View {
     private var errorHandler = ErrorHandling()
     private let id: Int
     
-    init(id: Int) {
+    init(siteUrl: URL, id: Int) {
         self.id = id
-        self.store = PostDetailStore(id: id)
+        self.store = PostDetailStore(siteUrl: siteUrl, id: id)
     }
     
     var body: some View {
@@ -48,13 +48,11 @@ struct PostDetailView: View {
                 })
             })
         }
-        .onChange(of: store.selectedSort, { old, new in
-            if new != old {
-                executing(store.loadComments, errorHandler: errorHandler)
-            }
+        .task(id: store.selectedSort, {
+            executing(action: store.loadComments, errorHandler: errorHandler)
         })
-        .onAppear {
-            executing(store.load, errorHandler: errorHandler)
+        .task {
+            executing(action: store.load, errorHandler: errorHandler)
         }
     }
 }

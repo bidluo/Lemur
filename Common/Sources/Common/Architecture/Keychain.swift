@@ -4,22 +4,22 @@ import LemmySwift
 public enum KeychainFailure: LocalizedError {
     case saveFailure
     case readFailure
+    case invalidUrl
 }
 
 class Keychain: KeychainType {
     
     init() {}
     
-    private static let TOKEN_SERVICE = "token"
-    
-    func save(token: String) throws {
+    func save(token: String, for url: URL, username: String) throws {
+        guard let _url = url.host() else { throw KeychainFailure.invalidUrl }
         let data = Data(token.utf8)
-        // TODO: Handle different servers
-        try self.save(data, service: Self.TOKEN_SERVICE, account: "")
+        try self.save(data, service: _url, account: username)
     }
     
-    func getToken() throws -> String {
-        guard let data = self.read(service: Self.TOKEN_SERVICE, account: "") else { throw KeychainFailure.readFailure }
+    func getToken(for request: URLRequest) throws -> String {
+        guard let host = request.url?.host(), let data = self.read(service: host, account: "active")
+        else { throw KeychainFailure.readFailure }
         
         let accessToken = String(data: data, encoding: .utf8)
         return accessToken ?? ""

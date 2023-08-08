@@ -1,7 +1,6 @@
 import Foundation
 
 protocol NetworkType {
-    var domain: URL { get }
     var urlSession: URLSession { get }
     var asyncActor: AsyncDataTaskActor { get }
 }
@@ -59,18 +58,31 @@ extension JSONDecoder.DateDecodingStrategy {
     }
 }
 
+struct EmptyResponse: Decodable {
+    
+}
+
 extension NetworkType {
     
-    func perform<T>(http: Spec, for: T.Type) async throws -> T where T: Decodable {
-        return try await perform(http: http)
+    func perform<T>(baseUrl: URL, http: Spec, for: T.Type, skipAuth: Bool = false) async throws -> T where T: Decodable {
+        let request = try buildRequest(baseUrl: baseUrl, http: http)
+        return try await perform(request: request, skipAuth: skipAuth)
     }
     
-    func perform<T>(http: Spec) async throws -> T where T: Decodable {
+    func perform<T>(baseUrl: URL, http: Spec, skipAuth: Bool = false) async throws -> T where T: Decodable {
+        let request = try buildRequest(baseUrl: baseUrl, http: http)
+        return try await perform(request: request, skipAuth: skipAuth)
+    }
+    
+    func perform<T>(request: URLRequest, for: T.Type, skipAuth: Bool = false) async throws -> T where T: Decodable {
+        return try await perform(request: request, skipAuth: skipAuth)
+    }
+    
+    func perform<T>(request: URLRequest, skipAuth: Bool = false) async throws -> T where T: Decodable {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.dateDecodingStrategy = .iso8601Multi
         
-        let request = try buildRequest(http: http)
-        let (data, _response) = try await asyncActor.perform(request: request, urlSession: urlSession)
+        let (data, _response) = try await asyncActor.perform(request: request, urlSession: urlSession, skipAuth: skipAuth)
         
         guard let response = _response as? HTTPURLResponse else {
             throw NetworkFailure.invalidResponse
@@ -93,7 +105,7 @@ extension NetworkType {
         }
     }
     
-    func buildRequest(http: Spec) throws -> URLRequest {
+    func buildRequest(baseUrl: URL, http: Spec) throws -> URLRequest {
         guard http.path.isEmpty == false else {
             throw RemoteError.invalidInput
         }
@@ -102,7 +114,7 @@ extension NetworkType {
             throw RemoteError.invalidPath
         }
         
-        var components = URLComponents(url: domain.appendingPathComponent(sanitisedPath), resolvingAgainstBaseURL: false)
+        var components = URLComponents(url: baseUrl.appendingPathComponent(sanitisedPath), resolvingAgainstBaseURL: false)
         
         let queryItems = http.query.filter { $0.value != nil }
         if queryItems.isEmpty == false {
@@ -150,23 +162,23 @@ actor AsyncDataTaskActor {
     /// - Parameters:
     ///   - request: The `URLRequest` to perform.
     ///   - urlSession: The `URLSession` to use for performing the request.
+    ///   - skipAuth: Whether to skip auth for request or not.
     ///
     /// - Returns: A `DataResponse` tuple containing the response data and the `URLResponse` object.
     ///   This tuple is delivered asynchronously via the returned `Task`.
     ///
     /// - Throws: If the network request fails, this function throws an error. The specific error
     ///   thrown depends on the nature of the failure.
-    func perform(request: URLRequest, urlSession: URLSession) async throws -> DataResponse {
+    func perform(request: URLRequest, urlSession: URLSession, skipAuth: Bool = false) async throws -> DataResponse {
         cleanExpiredTasks()
         
-
         if let existingTask = activeTasks[request]?.task {
             return try await existingTask.value
         }
 
         let task = Task<DataResponse, Error> {
             var authedRequest = request
-            if let token = try? keychain.getToken() {
+            if skipAuth == false, let token = try? keychain.getToken(for: request) {
                 authedRequest.url?.append(queryItems: [
                     .init(name: "auth", value: token)
                 ])

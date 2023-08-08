@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol AuthenticationRepositoryType {
-    func signIn(request: SignInRequest) async throws -> SignInResponse
+    func signIn(baseUrl: URL, request: SignInRequest) async throws -> SignInResponse
 }
 
 public class AuthenticationRepositoryMain: AuthenticationRepositoryType {
@@ -12,7 +12,7 @@ public class AuthenticationRepositoryMain: AuthenticationRepositoryType {
         self.remote = remote
     }
     
-    public func signIn(request: SignInRequest) async throws -> SignInResponse {
-        return try await remote.signIn(request: request)
+    public func signIn(baseUrl: URL, request: SignInRequest) async throws -> SignInResponse {
+        return try await remote.signIn(baseUrl: baseUrl, request: request)
     }
 }

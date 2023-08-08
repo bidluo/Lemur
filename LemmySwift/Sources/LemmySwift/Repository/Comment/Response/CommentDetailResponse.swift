@@ -2,7 +2,7 @@ import Foundation
 
 struct CommentDetailResponseRemote: Decodable {
     var comment: CommentContentResponseRemote?
-    var creator: CreatorResponseRemote?
+    var creator: PersonResponse?
     var post: PostContentResponse?
     var community: CommunityResponseRemote?
     var counts: CommentCounts?

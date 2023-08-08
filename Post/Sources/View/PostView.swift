@@ -60,7 +60,8 @@ struct PostView: View {
             creatorName: "CatCreator",
             communityId: 0,
             communityName: "CatsCommunity",
-            score: "0"
+            score: "0",
+            siteUrl: URL(string: "")!
         ),
         fullView: true
     )

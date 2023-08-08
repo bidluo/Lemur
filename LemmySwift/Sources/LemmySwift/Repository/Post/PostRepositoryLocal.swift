@@ -13,7 +13,19 @@ public actor PostRepositoryLocal: ModelActor {
         return try? context.fetch(FetchDescriptor<PostDetail>())
     }
     
-    func savePosts(posts: [PostDetailResponse]) -> [PostDetail] {
+    func savePosts(siteUrl: URL, posts: [PostDetailResponse]) -> [PostDetail] {
+        var siteFetch = FetchDescriptor<Site>()
+        
+        siteFetch.includePendingChanges = true
+        
+        let sites = try? context.fetch(siteFetch)
+        
+        // `FetchDescriptor` `#Predicate` doesn't work with URL
+        guard let site = sites?.first(where: { $0.url == siteUrl })
+        else {
+            return []
+        }
+        
         return posts.compactMap { post -> PostDetail? in
             guard let id = post.post?.id else { return nil }
             
@@ -22,7 +34,7 @@ public actor PostRepositoryLocal: ModelActor {
             if let existingPost = getPost(id: id) {
                 existingPost.update(with: post)
                 localPost = existingPost
-            } else if let newPost = PostDetail(remote: post, idPrefix: "") {
+            } else if let newPost = PostDetail(remote: post, idPrefix: site.name) {
                 localPost = newPost
                 newPost.update(with: post)
                 context.insert(newPost)
@@ -30,8 +42,9 @@ public actor PostRepositoryLocal: ModelActor {
                 return nil
             }
             
-            localPost.community = Community(remote: post.community, idPrefix: "")
-            localPost.creator = Creator(remote: post.creator, idPrefix: "")
+            localPost.community = Community(remote: post.community, idPrefix: site.name)
+            localPost.creator = Person(remote: post.creator, idPrefix: site.name)
+            localPost.site = site
             
             try? context.save()
             

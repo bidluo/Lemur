@@ -6,9 +6,9 @@ public class PostDetail {
     @Attribute(.unique) public let id: String
     public let rawId: Int
     
-    @Relationship public var creator: Creator?
+    @Relationship public var creator: Person?
     @Relationship public var community: Community?
-//    @Transient public var counts: PostCountsResponse?
+    @Relationship public var site: Site?
     
     public var creatorBannedFromCommunity: Bool?
     public var subscribed: String?

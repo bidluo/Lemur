@@ -1,6 +1,6 @@
 import Foundation
 
-public class CommentRepositoryRemote: NetworkType {
+class SiteRepositoryRemote: NetworkType {
     var urlSession: URLSession
     var asyncActor: AsyncDataTaskActor
     
@@ -9,7 +9,9 @@ public class CommentRepositoryRemote: NetworkType {
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    func getComments(baseUrl: URL, postId: Int, sort: CommentSort) async throws -> CommentListResponse {
-        return try await perform(baseUrl: baseUrl, http: CommentSpec.comments(postId, sort))
+    func querySite(url: URL) async throws -> SiteOverviewResponse {
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        return try await perform(request: request, skipAuth: true)
     }
 }

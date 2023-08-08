@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class Creator {
+public class Person {
     @Attribute(.unique) public let id: String
     public let rawId: Int
     
@@ -23,7 +23,7 @@ public class Creator {
     @Relationship(inverse: \PostDetail.creator) var posts: [PostDetail]? = []
     @Relationship(inverse: \Comment.creator) var comments: [Comment]? = []
     
-    init?(remote: CreatorResponseRemote?, idPrefix: String) {
+    init?(remote: PersonResponse?, idPrefix: String) {
         guard let creatorId = remote?.id else { return nil }
         
         self.id = "\(idPrefix)-\(creatorId)"
@@ -32,7 +32,7 @@ public class Creator {
         update(with: remote)
     }
     
-    func update(with remote: CreatorResponseRemote?) {
+    func update(with remote: PersonResponse?) {
         self.name = remote?.name
         self.banned = remote?.banned
         self.published = remote?.published

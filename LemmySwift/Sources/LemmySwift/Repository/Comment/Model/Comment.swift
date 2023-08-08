@@ -6,7 +6,7 @@ public class Comment {
     @Attribute(.unique) public let id: String
     public let rawId: Int
     
-    @Relationship public var creator: Creator?
+    @Relationship public var creator: Person?
     @Relationship public var post: PostDetail?
     public var creatorBannedFromCommunity: Bool?
     public var saved: Bool?

@@ -7,6 +7,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     @Injected(\.commentRepository) private var repository: CommentRepositoryType
     
     struct Input {
+        public let baseUrl: URL
         public let postId: Int
         public let sort: Sort
     }
@@ -21,7 +22,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     }
     
     func call(input: Input) async -> AsyncThrowingStream<Result, Error>  {
-        let commentsResponse = await repository.getComments(postId: input.postId, sort: input.sort)
+        let commentsResponse = await repository.getComments(baseUrl: input.baseUrl, postId: input.postId, sort: input.sort)
         
         return await mapAsyncStream(commentsResponse, transform: { response in
             let comments = self.handleComments(comments: response)

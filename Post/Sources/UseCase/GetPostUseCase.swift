@@ -9,6 +9,7 @@ class GetPostUseCase: UseCaseStreamType {
     
     struct Input {
         let id: Int
+        let siteUrl: URL
     }
     
     typealias Result = PostSummary
@@ -22,7 +23,7 @@ class GetPostUseCase: UseCaseStreamType {
     required init() {}
     
     func call(input: Input) async -> AsyncThrowingStream<Result, Error> {
-        let stream = await repository.getPost(id: input.id)
+        let stream = await repository.getPost(siteUrl: input.siteUrl, id: input.id)
         
         return await mapAsyncStream(stream) { post -> PostSummary in
             return try PostSummary(post: post)

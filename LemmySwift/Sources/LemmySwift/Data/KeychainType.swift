@@ -1,6 +1,6 @@
 import Foundation
 
 public protocol KeychainType {
-    func save(token: String) throws
-    func getToken() throws -> String
+    func save(token: String, for: URL, username: String) throws
+    func getToken(for: URLRequest) throws -> String
 }

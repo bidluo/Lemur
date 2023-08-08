@@ -3,7 +3,7 @@ import Foundation
 struct PostResponseRemote: Decodable {
     var postDetails: PostDetailResponse?
     var communityDetails: CommunityOverviewResponse?
-    var moderators: [CreatorResponseRemote]?
+    var moderators: [PersonResponse]?
     var crossPosts: [PostDetailResponse]?
     
     enum CodingKeys: String, CodingKey {

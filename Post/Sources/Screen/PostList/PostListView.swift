@@ -7,20 +7,13 @@ struct PostListView: View {
     private var errorHandler = ErrorHandling()
     
     @State private var navigationPath = NavigationPath()
-    @State private var destination: Destination?
     @Namespace private var animation
-    
-    enum Destination: Identifiable, Hashable {
-        case post(Int)
-        
-        var id: Int { return hashValue }
-    }
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
             List {
                 ForEach(store.rows, id: \.id) { item in
-                    NavigationLinkWithoutChevron(value: item.id, label: {
+                    NavigationLinkWithoutChevron(value: item, label: {
                         PostView(post: item, fullView: false)
                     })
                     .listRowInsets(EdgeInsets([.vertical], size: .small))
@@ -66,17 +59,15 @@ struct PostListView: View {
             .transition(.opacity)
             .navigationTitle(Text("Lemur"))
             .listStyle(.grouped)
-            .navigationDestination(for: Int.self, destination: { postId in
-                PostDetailView(id: postId)
+            .navigationDestination(for: PostSummary.self, destination: { post in
+                PostDetailView(siteUrl: post.siteUrl, id: post.id)
             })
         }
-        .onChange(of: store.selectedSort, { old, new in
-            if old != new {
-                executing(store.reload, errorHandler: errorHandler)
-            }
-        })
-        .onAppear {
-            executing(store.reload, errorHandler: errorHandler)
+        .task(id: store.selectedSort) {
+            executing(action: store.reload, errorHandler: errorHandler)
+        }
+        .task {
+            executing(action: store.reload, errorHandler: errorHandler)
         }
     }
 }

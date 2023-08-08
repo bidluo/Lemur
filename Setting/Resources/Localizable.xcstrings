@@ -1,7 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Add server" : {
+
+    },
+    "Enter server URL" : {
+
+    },
+    "lemmy.ml" : {
+
+    },
+    "lemmy.world" : {
+
+    },
     "Password" : {
+
+    },
+    "Recommendations" : {
 
     },
     "ScreenTItle" : {
@@ -15,7 +30,10 @@
         }
       }
     },
-    "Server address" : {
+    "Server URL" : {
+
+    },
+    "Servers" : {
 
     },
     "Sign in" : {

@@ -1,7 +1,7 @@
 import Foundation
 import LemmySwift
 
-struct PostSummary {
+struct PostSummary: Hashable {
     let id: Int
     let title: String
     let thumbnail: URL?
@@ -13,15 +13,19 @@ struct PostSummary {
     let communityName: String?
     let communityThumbnail: URL?
     let score: String
+    let siteUrl: URL
     
     enum Failure: LocalizedError {
         case invalidCreatorId
         case invalidCommunityId
         case invalidPost
+        case invalidSite
     }
     
     init(post: PostDetail?) throws {
         guard let _post = post else { throw Failure.invalidPost }
+        guard let _site = post?.site else { throw Failure.invalidSite }
+        
         
         let creator = _post.creator
         let community = _post.community
@@ -40,6 +44,7 @@ struct PostSummary {
         self.communityName = community?.name
         self.communityThumbnail = community?.icon
         self.score = post?.score?.formatted() ?? ""
+        self.siteUrl = _site.url
     }
     
     init(
@@ -53,7 +58,8 @@ struct PostSummary {
         communityId: Int,
         communityName: String,
         communityThumbnail: URL? = nil,
-        score: String
+        score: String,
+        siteUrl: URL
     ) {
         self.id = id
         self.title = title
@@ -66,5 +72,6 @@ struct PostSummary {
         self.communityName = communityName
         self.communityThumbnail = communityThumbnail
         self.score = score
+        self.siteUrl = siteUrl
     }
 }

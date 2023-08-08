@@ -23,10 +23,12 @@ enum HTTPMethod {
     case put(_: Data?)
     case patch(_: Data?)
     case delete
+    case head
 
     var body: Data? {
         switch self {
         case .get: return nil
+        case .head: return nil
         case .post(let data): return data
         case .put(let data): return data
         case .patch(let data): return data
@@ -41,6 +43,7 @@ enum HTTPMethod {
         case .put: return "PUT"
         case .patch: return "PATCH"
         case .delete: return "DELETE"
+        case .head: return "HEAD"
         }
     }
 }

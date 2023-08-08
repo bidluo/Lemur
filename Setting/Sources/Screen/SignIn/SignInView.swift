@@ -14,6 +14,10 @@ struct SignInView: View {
         VStack {
             Text("Sign in")
             
+            TextField(text: $store.serverUrl, label: { Text("Server URL") })
+            Text(store.selectedSiteName ?? "")
+            Text(store.selectedSiteDescription ?? "")
+            
             TextField(text: $store.username, label: { Text("Username or email") })
             TextField(text: $store.password, label: { Text("Password") })
             
@@ -24,6 +28,9 @@ struct SignInView: View {
             })
             
         }
+        .task(id: store.serverUrl, duration: .milliseconds(500), errorHandler: errorHandling, task: {
+            try? await store.serverUrlUpdated()
+        })
         .withErrorHandling(errorHandling: errorHandling)
     }
 }

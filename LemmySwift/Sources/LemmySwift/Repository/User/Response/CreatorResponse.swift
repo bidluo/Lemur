@@ -1,6 +1,6 @@
 import Foundation
 
-struct CreatorResponseRemote: Decodable {
+struct PersonResponse: Decodable {
     let id: Int?
     let name: String?
     let banned: Bool?

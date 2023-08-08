@@ -2,16 +2,14 @@ import Foundation
 
 class CommunityRepositoryRemote: NetworkType {
     var urlSession: URLSession
-    var domain: URL
     var asyncActor: AsyncDataTaskActor
     
-    init(domain: URL, urlSession: URLSession, keychain: KeychainType) {
-        self.domain = domain
+    init(urlSession: URLSession, keychain: KeychainType) {
         self.urlSession = urlSession
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    func getCommunities() async throws -> CommunityListResponse {
-        return try await perform(http: CommunitySpec.communities)
+    func getCommunities(baseUrl: URL) async throws -> CommunityListResponse {
+        return try await perform(baseUrl: baseUrl, http: CommunitySpec.communities)
     }
 }

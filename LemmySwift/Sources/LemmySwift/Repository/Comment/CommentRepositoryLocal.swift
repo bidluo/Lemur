@@ -46,18 +46,18 @@ public actor CommentRepositoryLocal: ModelActor {
                 return nil
             }
             
-            var localCreator: Creator?
-            var creatorFetch = FetchDescriptor<Creator>(
+            var localCreator: Person?
+            var creatorFetch = FetchDescriptor<Person>(
                 predicate: #Predicate { $0.rawId == creatorId }
             )
             
             creatorFetch.fetchLimit = 1
             if let fetchId = try? context.fetchIdentifiers(creatorFetch).first,
-               let existingCreator = context.object(with: fetchId) as? Creator {
+               let existingCreator = context.object(with: fetchId) as? Person {
                 
                 localCreator = existingCreator
                 localCreator?.update(with: comment.creator)
-            } else if let newCreator = Creator(remote: comment.creator, idPrefix: "") {
+            } else if let newCreator = Person(remote: comment.creator, idPrefix: "") {
                 localCreator = newCreator
                 context.insert(newCreator)
             }

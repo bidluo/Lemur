@@ -16,10 +16,6 @@ public extension Container {
 }
 
 public extension Container {
-    var postRepository: Factory<PostRepositoryType> {
-        Factory(self) { self.repositoryProvider().inject() }
-    }
-    
     var authenticationRepository: Factory<AuthenticationRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
@@ -29,6 +25,14 @@ public extension Container {
     }
     
     var communityRepository: Factory<CommunityRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var postRepository: Factory<PostRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var siteRepository: Factory<SiteRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
 }
