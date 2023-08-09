@@ -3,14 +3,14 @@ import SwiftUI
 import Observation
 
 struct DebouncingTaskViewModifier<ID: Equatable>: ViewModifier {
-    let id: ID
+    let id: ID?
     let priority: TaskPriority
     let duration: Duration?
     let errorHandler: ErrorHandling
     let task: @Sendable () async throws -> Void
     
     init(
-        id: ID,
+        id: ID?,
         priority: TaskPriority = .userInitiated,
         duration: Duration? = nil,
         errorHandler: ErrorHandling,
@@ -24,16 +24,32 @@ struct DebouncingTaskViewModifier<ID: Equatable>: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        content.task(id: id, priority: priority) {
-            do {
-                if let _duration = duration {
-                    try await Task.sleep(for: _duration)
+        if let _id = id {
+            content.task(id: id, priority: priority) {
+                do {
+                    if let _duration = duration {
+                        try await Task.sleep(for: _duration)
+                    }
+                    try await task()
+                } catch {
+                    switch error {
+                    case is CancellationError: break
+                    default: errorHandler.handle(error: error)
+                    }
                 }
-                try await task()
-            } catch {
-                switch error {
-                case is CancellationError: break
-                default: errorHandler.handle(error: error)
+            }
+        } else {
+            content.task(priority: priority) {
+                do {
+                    if let _duration = duration {
+                        try await Task.sleep(for: _duration)
+                    }
+                    try await task()
+                } catch {
+                    switch error {
+                    case is CancellationError: break
+                    default: errorHandler.handle(error: error)
+                    }
                 }
             }
         }
@@ -51,6 +67,23 @@ public extension View {
         modifier(
             DebouncingTaskViewModifier(
                 id: id,
+                priority: priority,
+                duration: duration,
+                errorHandler: errorHandler,
+                task: task
+            )
+        )
+    }
+    
+    func task(
+        priority: TaskPriority = .userInitiated,
+        duration: Duration? = nil,
+        errorHandler: ErrorHandling,
+        task: @Sendable @escaping () async throws -> Void
+    ) -> some View {
+        modifier(
+            DebouncingTaskViewModifier<Int>(
+                id: nil,
                 priority: priority,
                 duration: duration,
                 errorHandler: errorHandler,

@@ -7,6 +7,7 @@ public protocol RepositoryProviderType {
     func inject() -> CommunityRepositoryType
     func inject() -> PostRepositoryType
     func inject() -> SiteRepositoryType
+    func inject() -> UserRepositoryType
 }
 
 public class RepositoryProvider: RepositoryProviderType {
@@ -49,5 +50,11 @@ public class RepositoryProvider: RepositoryProviderType {
         let remote = SiteRepositoryRemote(urlSession: urlSession, keychain: keychain)
         let local = SiteRepositoryLocal(container: container)
         return SiteRepository(remote: remote, local: local)
+    }
+    
+    public func inject() -> UserRepositoryType {
+        let remote = UserRepositoryRemote(urlSession: urlSession, keychain: keychain)
+        let local = UserRepositoryLocal(container: container)
+        return UserRepository(remote: remote, local: local)
     }
 }

@@ -34,7 +34,7 @@ public actor PostRepositoryLocal: ModelActor {
             if let existingPost = getPost(id: id) {
                 existingPost.update(with: post)
                 localPost = existingPost
-            } else if let newPost = PostDetail(remote: post, idPrefix: site.name) {
+            } else if let newPost = PostDetail(remote: post, idPrefix: site.id) {
                 localPost = newPost
                 newPost.update(with: post)
                 context.insert(newPost)
@@ -42,8 +42,8 @@ public actor PostRepositoryLocal: ModelActor {
                 return nil
             }
             
-            localPost.community = Community(remote: post.community, idPrefix: site.name)
-            localPost.creator = Person(remote: post.creator, idPrefix: site.name)
+            localPost.community = Community(remote: post.community, idPrefix: site.id)
+            localPost.creator = Person(remote: post.creator, idPrefix: site.id)
             localPost.site = site
             
             try? context.save()

@@ -30,7 +30,22 @@ public struct MainSettingsView: View {
                     Text("Servers")
                 }
                 
-                // Signout button
+                Section {
+                    ForEach(store.loggedInUsers, id: \.id) { user in
+                        VStack(alignment: .leading) {
+                            Text(user.name ?? "").font(.subheadingBold)
+                            Text(user.siteName ?? "").font(.footnote)
+                        }
+                    }
+                    
+                    Button(action: {
+                        store.presentedSheet = .signIn
+                    }, label: {
+                        Text("Add user")
+                    })
+                } header: {
+                    Text("Logged in users")
+                }
             }
         }
         .sheet(item: $store.presentedSheet, content: { sheet in
@@ -39,7 +54,9 @@ public struct MainSettingsView: View {
                 ServerAddView()
                     .accentColor(Colour.brandPrimary.swiftUIColor)
                     .presentationDetents([.medium, .large])
-                
+            case .signIn:
+                SignInView()
+                    .accentColor(Colour.brandPrimary.swiftUIColor)
             }
         })
         .task {

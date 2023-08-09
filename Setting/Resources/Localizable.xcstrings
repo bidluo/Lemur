@@ -4,6 +4,9 @@
     "Add server" : {
 
     },
+    "Add user" : {
+
+    },
     "Enter server URL" : {
 
     },
@@ -11,6 +14,9 @@
 
     },
     "lemmy.world" : {
+
+    },
+    "Logged in users" : {
 
     },
     "Password" : {

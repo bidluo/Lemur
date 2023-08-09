@@ -11,15 +11,48 @@ struct SignInView: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             Text("Sign in")
             
-            TextField(text: $store.serverUrl, label: { Text("Server URL") })
+            if store.loaded, store.sites.isEmpty == false {
+                Menu(content: {
+                    ForEach(store.sites, id: \.urlString) { site in
+                        Button(action: {
+                            store.userSiteUrlString = site.urlString
+                            store.shouldShowAddServerField = false
+                            store.siteSelectorDisplay = site.name
+                        }, label: {
+                            Text(site.name)
+                            Text(site.urlString)
+                        })
+                    }
+                    
+                    Button(action: {
+                        store.userSiteUrlString = ""
+                        store.siteSelectorDisplay = "New site..."
+                        store.shouldShowAddServerField = true
+                    }, label: {
+                        Label("Add server", systemImage: "plus.circle")
+                    })
+                }, label: {
+                    Label(store.siteSelectorDisplay, systemImage: "list.bullet")
+                })
+            }
+            
+            if store.shouldShowAddServerField {
+                TextField(text: $store.userSiteUrlString, label: { Text("Server URL") })
+                    .keyboardType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+            }
+            
             Text(store.selectedSiteName ?? "")
             Text(store.selectedSiteDescription ?? "")
             
             TextField(text: $store.username, label: { Text("Username or email") })
-            TextField(text: $store.password, label: { Text("Password") })
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            SecureField(text: $store.password, label: { Text("Password") })
             
             Button(action: {
                 executing(action: store.submit, errorHandler: errorHandling)
@@ -28,8 +61,12 @@ struct SignInView: View {
             })
             
         }
-        .task(id: store.serverUrl, duration: .milliseconds(500), errorHandler: errorHandling, task: {
-            try? await store.serverUrlUpdated()
+        .padding(.medium)
+        .task(id: store.userSiteUrlString, duration: .milliseconds(500), errorHandler: errorHandling, task: {
+            try? await store.userSiteUrlStringUpdated()
+        })
+        .task(errorHandler: errorHandling, task: {
+            try await store.load()
         })
         .withErrorHandling(errorHandling: errorHandling)
     }

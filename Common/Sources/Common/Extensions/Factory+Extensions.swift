@@ -13,6 +13,10 @@ public extension Container {
     var keychain: Factory<KeychainType> {
         Factory(self) { Keychain() }.singleton
     }
+    
+    var userDefaults: Factory<UserDefaultsType> {
+        Factory(self) { UserDefaults.standard }
+    }
 }
 
 public extension Container {
@@ -33,6 +37,10 @@ public extension Container {
     }
     
     var siteRepository: Factory<SiteRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var userRepository: Factory<UserRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
 }

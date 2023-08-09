@@ -4,7 +4,7 @@ import SwiftData
 @Model
 public class Site {
     
-    @Attribute(.unique) public let id: Int
+    @Attribute(.unique) public let id: String
     public let name: String
     public let url: URL
     public let active: Bool
@@ -12,7 +12,7 @@ public class Site {
     init(name: String, url: URL, active: Bool) {
         self.name = name
         self.url = url
-        self.id = url.hashValue
+        self.id = url.host() ?? url.absoluteString
         self.active = active
     }
 }

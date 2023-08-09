@@ -23,11 +23,13 @@ public class Person {
     @Relationship(inverse: \PostDetail.creator) var posts: [PostDetail]? = []
     @Relationship(inverse: \Comment.creator) var comments: [Comment]? = []
     
+    @Relationship public var site: Site?
+    
     init?(remote: PersonResponse?, idPrefix: String) {
-        guard let creatorId = remote?.id else { return nil }
+        guard let personId = remote?.id else { return nil }
         
-        self.id = "\(idPrefix)-\(creatorId)"
-        self.rawId = creatorId
+        self.id = "\(idPrefix)-\(personId)"
+        self.rawId = personId
         
         update(with: remote)
     }
