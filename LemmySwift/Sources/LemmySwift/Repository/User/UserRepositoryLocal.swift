@@ -18,7 +18,7 @@ public actor UserRepositoryLocal: ModelActor {
         userFetch.includePendingChanges = true
         
         guard let fetchId = try? context.fetchIdentifiers(userFetch).first,
-              let user = context.object(with: fetchId) as? Person
+              let user = context.model(for: fetchId) as? Person
         else {
             return nil
         }
@@ -27,7 +27,7 @@ public actor UserRepositoryLocal: ModelActor {
     }
     
     func getPeople(withIds peopleIds: [String]) throws -> [Person] {
-        var userFetch = FetchDescriptor<Person>(
+        let userFetch = FetchDescriptor<Person>(
             predicate: #Predicate { peopleIds.contains($0.id) }
         )
         

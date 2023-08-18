@@ -13,6 +13,10 @@ public class PostRepositoryRemote: NetworkType {
         return try await perform(baseUrl: baseUrl, http: PostSpec.posts(sort))
     }
     
+    func getCommunityPosts(baseUrl: URL, communityId: Int, sort: PostSort) async throws -> PostListResponse {
+        return try await perform(baseUrl: baseUrl, http: PostSpec.communityPosts(communityId, sort))
+    }
+    
     func getPost(baseUrl: URL, id: Int) async throws -> PostResponseRemote {
         return try await perform(baseUrl: baseUrl, http: PostSpec.post(id))
     }

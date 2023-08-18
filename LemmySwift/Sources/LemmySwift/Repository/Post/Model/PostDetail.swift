@@ -38,7 +38,7 @@ public class PostDetail {
     public var featuredCommunity, featuredLocal: Bool?
     public var hotRank, hotRankActive: Int?
     
-    @Relationship(.cascade, inverse: \Comment.post) var comments: [Comment]? = []
+    @Relationship(deleteRule: .cascade, inverse: \Comment.post) var comments: [Comment]?
     
     init?(remote: PostDetailResponse?, idPrefix: String) {
         guard let postId = remote?.post?.id else { return nil }

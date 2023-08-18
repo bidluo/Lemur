@@ -25,7 +25,7 @@ struct DebouncingTaskViewModifier<ID: Equatable>: ViewModifier {
     
     func body(content: Content) -> some View {
         if let _id = id {
-            content.task(id: id, priority: priority) {
+            content.task(id: _id, priority: priority) {
                 do {
                     if let _duration = duration {
                         try await Task.sleep(for: _duration)

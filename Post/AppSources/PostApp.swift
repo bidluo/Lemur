@@ -1,12 +1,11 @@
 import SwiftUI
-import Community
+import Post
 
 @main
-struct CommunityApp: App {
+struct PostApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CommunityListView()
         }
     }
 }

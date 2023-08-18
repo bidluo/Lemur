@@ -15,13 +15,18 @@ public class RepositoryProvider: RepositoryProviderType {
     
     private var container: ModelContainer
     private let keychain: KeychainType
+    private let siteRepository: SiteRepositoryType
     
     public init(keychain: KeychainType) {
         self.urlSession = URLSession.shared
         self.keychain = keychain
         
         // TODO: Handle migrations
-        container = try! ModelContainer(for: PostDetail.self)
+        container = try! ModelContainer(for: [PostDetail.self, Community.self])
+        
+        let siteRemote = SiteRepositoryRemote(urlSession: urlSession, keychain: keychain)
+        let siteLocal = SiteRepositoryLocal(container: container)
+        siteRepository = SiteRepository(remote: siteRemote, local: siteLocal)
     }
     
     public func inject() -> AuthenticationRepositoryType {
@@ -37,7 +42,8 @@ public class RepositoryProvider: RepositoryProviderType {
     
     public func inject() -> CommunityRepositoryType {
         let remote = CommunityRepositoryRemote(urlSession: urlSession, keychain: keychain)
-        return CommunityRepositoryMain(remote: remote)
+        let local = CommunityRepositoryLocal(container: container)
+        return CommunityRepositoryMain(remote: remote, local: local, siteRepository: inject())
     }
     
     public func inject() -> PostRepositoryType {
@@ -47,9 +53,7 @@ public class RepositoryProvider: RepositoryProviderType {
     }
     
     public func inject() -> SiteRepositoryType {
-        let remote = SiteRepositoryRemote(urlSession: urlSession, keychain: keychain)
-        let local = SiteRepositoryLocal(container: container)
-        return SiteRepository(remote: remote, local: local)
+        return siteRepository
     }
     
     public func inject() -> UserRepositoryType {

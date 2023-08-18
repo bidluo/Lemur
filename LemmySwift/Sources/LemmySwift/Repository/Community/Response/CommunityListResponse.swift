@@ -32,4 +32,5 @@ struct CommunityCountsResponse: Decodable {
 
 public enum SubscribedResponse: String, Codable {
     case notSubscribed = "NotSubscribed"
+    case subscribed = "Subscribed"
 }

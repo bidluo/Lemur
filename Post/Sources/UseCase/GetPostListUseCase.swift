@@ -8,6 +8,8 @@ class GetPostListUseCase: UseCaseStreamType {
     @Injected(\.postRepository) private var repository: PostRepositoryType
     
     struct Input {
+        public let siteUrl: URL?
+        public let communityId: Int?
         public let sort: Sort
     }
     
@@ -21,13 +23,17 @@ class GetPostListUseCase: UseCaseStreamType {
     typealias Sort = LemmySwift.PostSort
     
     func call(input: Input) async -> AsyncThrowingStream<Result, Error> {
-        let stream = await repository.getPosts(sort: input.sort)
+        let stream: AsyncThrowingStream<[PostDetail], Error>
+        if let siteUrl = input.siteUrl, let communityId = input.communityId {
+            stream = await repository.getCommunityPosts(siteUrl: siteUrl, communityId: communityId, sort: input.sort)
+        } else {
+            stream = await repository.getPosts(sort: input.sort)
+        }
         
-        return await mapAsyncStream(stream) { result -> Result in
-            guard case let .loaded(postList, source) = result else { return Result(posts: [])}
-            let posts = postList?.compactMap { post in
+        return await mapAsyncStream(stream) { postList -> Result in
+            let posts = postList.compactMap { post in
                 return try? PostSummary(post: post)
-            } ?? []
+            }
             
             return Result(posts: posts)
         }

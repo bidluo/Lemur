@@ -1,13 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "All" : {
+
+    },
     "Communities" : {
 
     },
-    "Community List" : {
+    "Home" : {
 
     },
-    "Home" : {
+    "house.fill" : {
 
     },
     "ScreenTItle" : {
@@ -22,6 +25,9 @@
       }
     },
     "Settings" : {
+
+    },
+    "Sites" : {
 
     }
   },

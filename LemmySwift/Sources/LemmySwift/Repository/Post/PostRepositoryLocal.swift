@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-public actor PostRepositoryLocal: ModelActor {
+actor PostRepositoryLocal: ModelActor {
     nonisolated public let executor: any ModelExecutor
     
     init(container: ModelContainer) {
@@ -13,7 +13,7 @@ public actor PostRepositoryLocal: ModelActor {
         return try? context.fetch(FetchDescriptor<PostDetail>())
     }
     
-    func savePosts(siteUrl: URL, posts: [PostDetailResponse]) -> [PostDetail] {
+    func savePosts(siteUrl: URL, posts: [PostDetailResponse], storeLocally: Bool = true) -> [PostDetail] {
         var siteFetch = FetchDescriptor<Site>()
         
         siteFetch.includePendingChanges = true
@@ -37,7 +37,10 @@ public actor PostRepositoryLocal: ModelActor {
             } else if let newPost = PostDetail(remote: post, idPrefix: site.id) {
                 localPost = newPost
                 newPost.update(with: post)
-                context.insert(newPost)
+                
+                if storeLocally {
+                    context.insert(newPost)
+                }
             } else {
                 return nil
             }
@@ -61,7 +64,7 @@ public actor PostRepositoryLocal: ModelActor {
         postFetch.includePendingChanges = true
         
         guard let fetchId = try? context.fetchIdentifiers(postFetch).first,
-              let post = context.object(with: fetchId) as? PostDetail
+              let post = context.model(for: fetchId) as? PostDetail
         else {
             return nil
         }

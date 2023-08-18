@@ -53,7 +53,7 @@ public actor CommentRepositoryLocal: ModelActor {
             
             creatorFetch.fetchLimit = 1
             if let fetchId = try? context.fetchIdentifiers(creatorFetch).first,
-               let existingCreator = context.object(with: fetchId) as? Person {
+               let existingCreator = context.model(for: fetchId) as? Person {
                 
                 localCreator = existingCreator
                 localCreator?.update(with: comment.creator)
@@ -81,7 +81,7 @@ public actor CommentRepositoryLocal: ModelActor {
         commentFetch.includePendingChanges = true
         
         guard let fetchId = try? context.fetchIdentifiers(commentFetch).first,
-              let comment = context.object(with: fetchId) as? Comment
+              let comment = context.model(for: fetchId) as? Comment
         else {
             return nil
         }

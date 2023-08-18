@@ -11,11 +11,13 @@ class PostListStore {
     var rows: [PostSummary] = []
     var selectedSort: GetPostListUseCase.Sort = .hot
     
+    private var siteUrl: URL?
+    private var communityId: Int?
     private var needsLoad = true
     
-    @ObservationIgnored public var mainItems: [GetPostListUseCase.Sort] { return [.hot, .active, .old, .new] }
-    @ObservationIgnored public var commentItems: [GetPostListUseCase.Sort] { return [.mostComments, .newComments] }
-    @ObservationIgnored public var topItems: [GetPostListUseCase.Sort] {
+    public var mainItems: [GetPostListUseCase.Sort] { return [.hot, .active, .old, .new] }
+    public var commentItems: [GetPostListUseCase.Sort] { return [.mostComments, .newComments] }
+    public var topItems: [GetPostListUseCase.Sort] {
         return [
             .topHour,
             .topSixHour,
@@ -31,7 +33,9 @@ class PostListStore {
         ]
     }
     
-    init() {
+    init(siteUrl: URL? = nil, communityId: Int? = nil) {
+        self.siteUrl = siteUrl
+        self.communityId = communityId
     }
     
     func reload() async throws {
@@ -45,7 +49,7 @@ class PostListStore {
             needsLoad = false
         }
         
-        for try await posts in await useCase.call(input: .init(sort: selectedSort)) {
+        for try await posts in await useCase.call(input: .init(siteUrl: siteUrl, communityId: communityId, sort: selectedSort)) {
             rows = posts.posts
         }
     }

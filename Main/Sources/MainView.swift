@@ -1,6 +1,8 @@
 import SwiftUI
 import Common
 import Observation
+import Post
+import Community
 
 @Observable
 class MainStore {
@@ -15,38 +17,51 @@ class MainStore {
 
 struct MainView: View {
     @State private var store = MainStore()
-    @EnvironmentObject private var provider: ViewProvider
+    @EnvironmentObject private var provider: Common.ViewProvider
     
     var body: some View {
-        NavigationSplitView(columnVisibility: .constant(.detailOnly), preferredCompactColumn: .constant(.detail), sidebar: {
-            Text("Community List")
-                .toolbar {
-                    Button(action: {
-                        store.activeSheet = .signin
-                    }, label: {
-                        Image(systemName: "person.circle.fill")
-                    })
+        TabView {
+            NavigationSplitView(
+                columnVisibility: .constant(.doubleColumn),
+                preferredCompactColumn: .constant(.content),
+                sidebar: {
+                    MainSideBarView()
+                        .toolbar {
+                            Button(action: {
+                                store.activeSheet = .signin
+                            }, label: {
+                                Image(systemName: "person.circle.fill")
+                            })
+                        }
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Communities")
+                            }
+                        }
+                }, content: {
+                    PostListView()
+                }, detail: {
                 }
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Text("Communities")
-                    }
-                }
-        }, detail: {
-            TabView {
-                provider.postProvider?.listView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("Home")
-                    }
-                
-                provider.settingsProvider?.mainSettingsView()
-                    .tabItem {
-                        Image(systemName: "house.fill")
-                        Text("Settings")
-                    }
+            )
+            .navigationSplitViewStyle(.balanced)
+
+            .tabItem {
+                Image(systemName: "house.fill")
+                Text("Home")
             }
-        })
+            
+            provider.settingsProvider?.mainSettingsView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Settings")
+                }
+            
+            provider.communityProvider?.listView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("house.fill")
+                }
+        }
         .accentColor(Colour.brandPrimary.swiftUIColor)
         .sheet(item: $store.activeSheet, content: { sheet in
             switch sheet {

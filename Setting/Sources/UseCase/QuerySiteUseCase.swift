@@ -18,7 +18,7 @@ class QuerySiteUseCase: UseCaseType {
         let url: URL
     }
     
-    enum Failure: LocalizedError {
+    enum Failure: String, LocalizedError {
         case invalidUrl
         case timeout
         case serverUnreachable
@@ -59,7 +59,7 @@ class QuerySiteUseCase: UseCaseType {
         
         // If scheme is not provided, try with 'http' and 'https'
         // Not using URLComponents.url for this as it returns a URL like https:host instead of https://host (note the forward slashes)
-        if _completeUrl.scheme?.starts(with: "http") == false {
+        if _completeUrl.scheme?.starts(with: "http") == false || _completeUrl.scheme == nil {
             let httpsUrlString = "https://\(_completeUrl)"
             if let url = URL(string: httpsUrlString), let _site = try? await repository.querySite(url: url), let finalUrl = URL(string: "https://\(urlString)") {
                 site = _site

@@ -20,8 +20,8 @@ public class Person {
     public var bio: String?
     public var banner: String?
     
-    @Relationship(inverse: \PostDetail.creator) var posts: [PostDetail]? = []
-    @Relationship(inverse: \Comment.creator) var comments: [Comment]? = []
+    @Relationship(inverse: \PostDetail.creator) var posts: [PostDetail]?
+    @Relationship(inverse: \Comment.creator) var comments: [Comment]?
     
     @Relationship public var site: Site?
     

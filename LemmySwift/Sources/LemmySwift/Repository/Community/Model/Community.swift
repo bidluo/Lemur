@@ -22,7 +22,25 @@ public class Community {
     public var banner: URL?
     public var updated: Date?
     
-    @Relationship(inverse: \PostDetail.community) private var posts: [PostDetail]? = []
+    public var subscribed: SubscribedResponse?
+    public var subscriberCount: Int?
+    public var postCount: Int?
+    public var dailyActiveUserCount: Int?
+    
+    @Relationship(inverse: \PostDetail.community) private var posts: [PostDetail]?
+    @Relationship var site: Site?
+    
+    @Transient public var siteUrl: URL? {
+        return site?.url
+    }
+    
+    init?(remote: CommunityOverviewResponse?, idPrefix: String) {
+        guard let communityId = remote?.community?.id else { return nil }
+        self.rawId = communityId
+        self.id = "\(idPrefix)-\(communityId)"
+        
+        update(with: remote)
+    }
     
     init?(remote: CommunityResponseRemote?, idPrefix: String) {
         guard let communityId = remote?.id else { return nil }
@@ -30,6 +48,15 @@ public class Community {
         self.id = "\(idPrefix)-\(communityId)"
         
         update(with: remote)
+    }
+    
+    func update(with remote: CommunityOverviewResponse?) {
+        update(with: remote?.community)
+        self.subscribed = remote?.subscribed
+        
+        self.postCount = remote?.counts?.posts
+        self.subscriberCount = remote?.counts?.subscribers
+        self.dailyActiveUserCount = remote?.counts?.usersActiveDay
     }
     
     func update(with remote: CommunityResponseRemote?) {

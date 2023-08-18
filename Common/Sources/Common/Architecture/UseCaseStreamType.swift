@@ -20,7 +20,7 @@ extension UseCaseStreamType {
     @MainActor
     public func mapAsyncStream<Input, Output>(
         _ stream: AsyncThrowingStream<Input, Error>,
-        transform: @MainActor @escaping (Input) throws -> Output
+        transform: @escaping (Input) throws -> Output
     ) -> AsyncThrowingStream<Output, Error> {
         return AsyncThrowingStream<Output, Error> { continuation in
             Task {

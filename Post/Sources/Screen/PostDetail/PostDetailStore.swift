@@ -11,7 +11,6 @@ class PostDetailStore {
     @ObservationIgnored
     @UseCaseStream private var getCommentsUseCase: GetPostCommentsUseCase
     
-    @ObservationIgnored
     public var sortItems: [GetPostCommentsUseCase.Sort] { return [.hot, .top, .old, .new] }
     
     var post: PostSummary?

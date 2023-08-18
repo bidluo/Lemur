@@ -12,4 +12,8 @@ class CommunityRepositoryRemote: NetworkType {
     func getCommunities(baseUrl: URL) async throws -> CommunityListResponse {
         return try await perform(baseUrl: baseUrl, http: CommunitySpec.communities)
     }
+    
+    func getSubscribedCommunities(baseUrl: URL) async throws -> CommunityListResponse {
+        return try await perform(baseUrl: baseUrl, http: CommunitySpec.subscribedCommunities)
+    }
 }
