@@ -11,17 +11,16 @@ public struct PostListView: View {
     }
     
     public var body: some View {
-//        NavigationStack(path: $navigationPath) {
         List {
             ForEach(store.rows, id: \.id) { item in
                 NavigationLinkWithoutChevron(value: item, label: {
                     PostView(post: item, fullView: false)
                 })
                 .listRowInsets(EdgeInsets([.vertical], size: .small))
-                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden, edges: .all)
             }
         }
+        .listRowSpacing(Size.smallMedium.rawValue)
         .listSectionSpacing(.compact)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing, content: {
@@ -64,9 +63,9 @@ public struct PostListView: View {
             PostDetailView(siteUrl: post.siteUrl, id: post.id)
                 .id(post.id)
         })
-//        .task(id: store.selectedSort) {
-//            executing(action: store.reload, errorHandler: errorHandler)
-//        }
+        .task(id: store.selectedSort) {
+            executing(action: store.reload, errorHandler: errorHandler)
+        }
         .task {
             executing(action: store.load, errorHandler: errorHandler)
         }

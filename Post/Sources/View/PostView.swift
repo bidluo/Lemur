@@ -4,8 +4,19 @@ import Common
 
 struct PostView: View {
     
-    var post: PostSummary
+    @State var post: PostSummary
     var fullView: Bool
+    
+    @State private var errorHandling = ErrorHandling()
+    @UseCase private var voteUseCase: PostVoteUseCase
+    
+    private var scoreColour: Color {
+        switch post.myVote {
+        case 1: return .orange
+        case -1: return .blue
+        default: return .gray
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: Size.small.rawValue) {
@@ -37,15 +48,51 @@ struct PostView: View {
                 Text(post.creatorName ?? "")
                     .font(.subheadingBold)
                     .fontDesign(.rounded)
+                
                 Spacer()
                 
                 Text(post.score)
                     .font(.footnote)
                     .fontDesign(.monospaced)
+                    .foregroundStyle(scoreColour)
             }
             .padding([.horizontal, .bottom], .medium)
+            
+            if fullView {
+                HStack {
+                    Button(action: {
+                        
+                    }, label: {
+                        Image(systemName: "arrow.up")
+                            .tint(post.myVote > 0 ? .orange : .gray)
+                    })
+                    
+                    Button(action: {
+                        
+                    }, label: {
+                        Image(systemName: "arrow.down")
+                            .tint(post.myVote < 0 ? .blue : .gray)
+                    })
+                }
+                .padding([.horizontal, .bottom], .medium)
+            }
         }
-        .background(Colour.secondaryBackground.swiftUIColor)
+        .swipeActions(edge: .leading, allowsFullSwipe: true, content: {
+            Button(action: {
+                executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .up)) }, errorHandler: errorHandling)
+            }, label: {
+                Image(systemName: post.myVote > 0 ? "arrow.uturn.up" : "arrow.up")
+            })
+            .tint(Color.orange)
+        })
+        .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
+            Button(action: {
+                executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .down)) }, errorHandler: errorHandling)
+            }, label: {
+                Image(systemName: post.myVote < 1 ? "arrow.uturn.down" : "arrow.down")
+            })
+            .tint(Color.blue)
+        })
     }
 }
 

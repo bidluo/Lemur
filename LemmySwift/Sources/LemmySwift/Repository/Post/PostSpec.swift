@@ -4,12 +4,14 @@ enum PostSpec: Spec {
     case posts(PostSort)
     case communityPosts(Int, PostSort)
     case post(Int)
+    case vote(PostVoteRequest)
     
     var method: HTTPMethod {
         switch self {
         case .posts(_): .get
         case .communityPosts(_,_): .get
         case .post(_): .get
+        case let .vote(request): .post(JSON.encode(obj: request))
         }
     }
     
@@ -18,6 +20,7 @@ enum PostSpec: Spec {
         case .posts(_): "post/list"
         case .communityPosts(_,_): "post/list"
         case .post(_): "post"
+        case .vote(_): "post/like"
         }
     }
     
@@ -32,6 +35,7 @@ enum PostSpec: Spec {
                 URLQueryItem(name: "sort", value: sort.rawValue),
                 URLQueryItem(name: "community_id", value: String(communityId))
             ]
+        default: []
         }
     }
 }

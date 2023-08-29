@@ -178,7 +178,7 @@ actor AsyncDataTaskActor {
 
         let task = Task<DataResponse, Error> {
             var authedRequest = request
-            if skipAuth == false, let token = try? keychain.getToken(for: request) {
+            if skipAuth == false, let token = try? keychain.getToken(for: request.url) {
                 authedRequest.url?.append(queryItems: [
                     .init(name: "auth", value: token)
                 ])

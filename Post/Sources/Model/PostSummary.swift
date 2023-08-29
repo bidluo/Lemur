@@ -14,6 +14,7 @@ struct PostSummary: Hashable {
     let communityThumbnail: URL?
     let score: String
     let siteUrl: URL
+    let myVote: Int
     
     enum Failure: LocalizedError {
         case invalidCreatorId
@@ -45,6 +46,7 @@ struct PostSummary: Hashable {
         self.communityThumbnail = community?.icon
         self.score = post?.score?.formatted() ?? ""
         self.siteUrl = _site.url
+        self.myVote = post?.myVote ?? 0
     }
     
     init(
@@ -73,5 +75,6 @@ struct PostSummary: Hashable {
         self.communityThumbnail = communityThumbnail
         self.score = score
         self.siteUrl = siteUrl
+        self.myVote = 0
     }
 }

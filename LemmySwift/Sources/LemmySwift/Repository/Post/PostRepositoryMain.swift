@@ -3,7 +3,8 @@ import Foundation
 public protocol PostRepositoryType {
     func getPosts(sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error>
     func getCommunityPosts(siteUrl: URL, communityId: Int, sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error>
-    func getPost(siteUrl: URL, id: Int) async -> AsyncThrowingStream<PostDetail, Error>
+    func getPost(siteUrl: URL, id: Int, localOnly: Bool) async -> AsyncThrowingStream<PostDetail, Error>
+    func votePost(siteURL: URL, request: PostVoteRequest) async throws -> PostDetail
 }
 
 public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
@@ -72,18 +73,33 @@ public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
         })
     }
     
-    public func getPost(siteUrl: URL, id: Int) -> AsyncThrowingStream<PostDetail, Error> {
+    public func getPost(siteUrl: URL, id: Int, localOnly: Bool) -> AsyncThrowingStream<PostDetail, Error> {
         return fetchFromSources { [weak self] in
             await self?.local.getPost(id: id)
         } remoteDataSource: { [weak self] in
-            try await self?.remote.getPost(baseUrl: siteUrl, id: id).postDetails
+            guard localOnly == false else { return Optional<PostDetailResponse>(nil) }
+            return try await self?.remote.getPost(baseUrl: siteUrl, id: id).postDetails
         } transform: { [weak local] localResponse, remoteResponse in
             if let _remote = remoteResponse {
-                let mappedPost = await local?.savePosts(siteUrl: siteUrl, posts: [_remote])
-                return mappedPost?.first
+                let mappedPost = await local?.savePost(siteUrl: siteUrl, post: _remote)
+                return mappedPost
             }
             
             return localResponse
         }
+    }
+    
+    public func getLocalPost(siteUrl: URL, id: Int) async -> PostDetail? {
+        await self.local.getPost(id: id)
+    }
+    
+    public func votePost(siteURL: URL, request: PostVoteRequest) async throws -> PostDetail {
+        let response = try await remote.votePost(siteURL: siteURL, request: request).postDetails
+        
+        guard let localPost = await local.savePost(siteUrl: siteURL, post: response) else {
+            throw NetworkFailure.invalidResponse
+        }
+        
+        return localPost
     }
 }

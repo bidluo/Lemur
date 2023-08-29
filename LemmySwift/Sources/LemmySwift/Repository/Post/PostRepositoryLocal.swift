@@ -27,32 +27,51 @@ actor PostRepositoryLocal: ModelActor {
         }
         
         return posts.compactMap { post -> PostDetail? in
-            guard let id = post.post?.id else { return nil }
-            
-            // Without doing this accessing the model from main thread violates thread access
-            let localPost: PostDetail
-            if let existingPost = getPost(id: id) {
-                existingPost.update(with: post)
-                localPost = existingPost
-            } else if let newPost = PostDetail(remote: post, idPrefix: site.id) {
-                localPost = newPost
-                newPost.update(with: post)
-                
-                if storeLocally {
-                    context.insert(newPost)
-                }
-            } else {
-                return nil
-            }
-            
-            localPost.community = Community(remote: post.community, idPrefix: site.id)
-            localPost.creator = Person(remote: post.creator, idPrefix: site.id)
-            localPost.site = site
-            
-            try? context.save()
-            
-            return localPost
+            savePost(site: site, post: post)
         }
+    }
+    
+    func savePost(siteUrl: URL, post: PostDetailResponse?, storeLocally: Bool = true) -> PostDetail? {
+        var siteFetch = FetchDescriptor<Site>()
+        
+        siteFetch.includePendingChanges = true
+        
+        let sites = try? context.fetch(siteFetch)
+        
+        // `FetchDescriptor` `#Predicate` doesn't work with URL
+        guard let site = sites?.first(where: { $0.url == siteUrl })
+        else {
+            return nil
+        }
+        
+        return self.savePost(site: site, post: post)
+    }
+    
+    func savePost(site: Site, post: PostDetailResponse?, storeLocally: Bool = true) -> PostDetail? {
+        guard let id = post?.post?.id else { return nil }
+        
+        // Without doing this accessing the model from main thread violates thread access
+        let localPost: PostDetail
+        if let existingPost = getPost(id: id) {
+            localPost = existingPost
+        } else if let newPost = PostDetail(remote: post, idPrefix: site.id) {
+            localPost = newPost
+            
+            if storeLocally {
+                context.insert(newPost)
+            }
+        } else {
+            return nil
+        }
+        
+        localPost.update(with: post)
+        localPost.community = Community(remote: post?.community, idPrefix: site.id)
+        localPost.creator = Person(remote: post?.creator, idPrefix: site.id)
+        localPost.site = site
+        
+        try? context.save()
+        
+        return localPost
     }
     
     func getPost(id: Int) -> PostDetail? {

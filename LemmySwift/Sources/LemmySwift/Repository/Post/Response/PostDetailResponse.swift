@@ -10,6 +10,7 @@ struct PostDetailResponse: Decodable {
     var subscribed: String?
     var saved, read, creatorBlocked: Bool?
     var unreadComments: Int?
+    var myVote: Int?
     
     enum CodingKeys: String, CodingKey {
         case post = "post"
@@ -19,6 +20,7 @@ struct PostDetailResponse: Decodable {
         case counts, subscribed, saved, read
         case creatorBlocked = "creator_blocked"
         case unreadComments = "unread_comments"
+        case myVote = "my_vote"
     }
 }
 

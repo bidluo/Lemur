@@ -33,10 +33,16 @@ public class PostDetail {
     public var embedDescription: String?
     public var updated: Date?
     
-    public var upvotes, downvotes, commentsCount, score: Int?
+    public var score: Int?
+    public var upvotes: Int?
+    public var downvotes: Int?
+    public var commentsCount: Int?
+    
     public var newestCommentTimeNecro, newestCommentTime: Date?
     public var featuredCommunity, featuredLocal: Bool?
     public var hotRank, hotRankActive: Int?
+    
+    public var myVote: Int?
     
     @Relationship(deleteRule: .cascade, inverse: \Comment.post) var comments: [Comment]?
     
@@ -83,5 +89,6 @@ public class PostDetail {
         self.hotRank = remote?.counts?.hotRank
         self.hotRankActive = remote?.counts?.hotRankActive
         self.commentsCount = remote?.counts?.comments
+        self.myVote = remote?.myVote
     }
 }

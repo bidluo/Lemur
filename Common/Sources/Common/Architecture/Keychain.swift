@@ -17,8 +17,8 @@ class Keychain: KeychainType {
         try self.save(data, service: _url, account: username)
     }
     
-    func getToken(for request: URLRequest) throws -> String {
-        guard let host = request.url?.host(), let data = self.read(service: host, account: "active")
+    func getToken(for url: URL?) throws -> String {
+        guard let host = url?.host(), let data = self.read(service: host, account: "active")
         else { throw KeychainFailure.readFailure }
         
         let accessToken = String(data: data, encoding: .utf8)
