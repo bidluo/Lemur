@@ -89,10 +89,6 @@ public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
         }
     }
     
-    public func getLocalPost(siteUrl: URL, id: Int) async -> PostDetail? {
-        await self.local.getPost(id: id)
-    }
-    
     public func votePost(siteURL: URL, request: PostVoteRequest) async throws -> PostDetail {
         let response = try await remote.votePost(siteURL: siteURL, request: request).postDetails
         

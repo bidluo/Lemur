@@ -18,7 +18,7 @@ class PostDetailStore {
     var selectedSort: GetPostCommentsUseCase.Sort = .hot
     
     private let postId: Int
-    private let siteUrl: URL
+    let siteUrl: URL
     
     init(siteUrl: URL, id: Int) {
         self.postId = id

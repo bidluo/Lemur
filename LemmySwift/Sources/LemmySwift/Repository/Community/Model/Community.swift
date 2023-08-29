@@ -42,7 +42,7 @@ public class Community {
         update(with: remote)
     }
     
-    init?(remote: CommunityResponseRemote?, idPrefix: String) {
+    init?(remote: CommunityResponse?, idPrefix: String) {
         guard let communityId = remote?.id else { return nil }
         self.rawId = communityId
         self.id = "\(idPrefix)-\(communityId)"
@@ -59,7 +59,7 @@ public class Community {
         self.dailyActiveUserCount = remote?.counts?.usersActiveDay
     }
     
-    func update(with remote: CommunityResponseRemote?) {
+    func update(with remote: CommunityResponse?) {
         self.name = remote?.name
         self.title = remote?.title
         self.communityDescription = remote?.communityDescription

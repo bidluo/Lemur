@@ -1,6 +1,6 @@
 import Foundation
 
-struct CommentContentResponseRemote: Decodable {
+struct CommentContentResponse: Decodable {
     var id: Int?
     var creatorID: Int?
     var postID: Int?

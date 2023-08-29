@@ -8,12 +8,15 @@ struct CommentContent: Identifiable, Hashable, Equatable {
     let publishDate: Date?
     let creatorHome: String?
     var score: Int?
+    var myScore: Int?
     
     // Display purpose only
     var parentId: Int?
     var children: [CommentContent]?
     
     static func ==(lhs: Self, rhs: Self) -> Bool {
-        return lhs.id == rhs.id
+        return lhs.id == rhs.id &&
+        lhs.score == rhs.score &&
+        lhs.myScore == rhs.myScore
     }
 }

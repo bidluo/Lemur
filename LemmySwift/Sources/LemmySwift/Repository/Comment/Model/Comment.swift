@@ -24,10 +24,14 @@ public class Comment {
     public var distinguished: Bool?
     public var languageID: Int?
     public var updated: Date?
-    public var score, upvotes, downvotes: Int?
+    public var score: Int?
+    public var upvotes: Int?
+    public var downvotes: Int?
     public var childCount, hotRank: Int?
     
-    init?(remote: CommentDetailResponseRemote?, idPrefix: String) {
+    public var myVote: Int?
+    
+    init?(remote: CommentDetailResponse?, idPrefix: String) {
         guard let commentId = remote?.comment?.id else { return nil }
         self.id = "\(idPrefix)-\(commentId)"
         self.rawId = commentId
@@ -35,7 +39,7 @@ public class Comment {
         self.update(with: remote)
     }
     
-    func update(with remote: CommentDetailResponseRemote?) {
+    func update(with remote: CommentDetailResponse?) {
         self.creatorBannedFromCommunity = remote?.creatorBannedFromCommunity
         self.saved = remote?.saved
         self.creatorBlocked = remote?.creatorBlocked
@@ -55,5 +59,7 @@ public class Comment {
         self.upvotes = remote?.counts?.upvotes
         self.downvotes = remote?.counts?.downvotes
         self.score = remote?.counts?.score
+        
+        self.myVote = remote?.myVote
     }
 }

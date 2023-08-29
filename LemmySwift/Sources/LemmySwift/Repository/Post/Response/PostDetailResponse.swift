@@ -4,7 +4,7 @@ import SwiftData
 struct PostDetailResponse: Decodable {
     var post: PostContentResponse?
     var creator: PersonResponse?
-    var community: CommunityResponseRemote?
+    var community: CommunityResponse?
     var creatorBannedFromCommunity: Bool?
     var counts: PostCountsResponse?
     var subscribed: String?

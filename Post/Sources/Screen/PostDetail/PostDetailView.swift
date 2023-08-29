@@ -24,7 +24,7 @@ struct PostDetailView: View {
             }
             
             NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
-                CommentView(comment: comment, nestLevel: nestLevel)
+                CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
             }
             .disclosureGroupStyle(.arrowLess)
             .listRowInsets(EdgeInsets(.all, size: .zero))

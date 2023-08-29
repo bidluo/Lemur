@@ -2,7 +2,7 @@ import Foundation
 
 struct PersonDetailResponse: Decodable {
     let personView: PersonViewResponse?
-    let comments: [CommentDetailResponseRemote]?
+    let comments: [CommentDetailResponse]?
     let posts: [PostDetailResponse]?
     let moderates: [ModeratedCommunity]?
     
@@ -13,7 +13,7 @@ struct PersonDetailResponse: Decodable {
 }
 
 struct ModeratedCommunity: Decodable {
-    let community: CommunityResponseRemote?
+    let community: CommunityResponse?
     let moderator: PersonResponse?
 }
 

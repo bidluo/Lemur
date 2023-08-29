@@ -5,7 +5,7 @@ struct CommunityListResponse: Decodable {
 }
 
 struct CommunityOverviewResponse: Decodable {
-    let community: CommunityResponseRemote?
+    let community: CommunityResponse?
     let subscribed: SubscribedResponse?
     let blocked: Bool?
     let counts: CommunityCountsResponse?

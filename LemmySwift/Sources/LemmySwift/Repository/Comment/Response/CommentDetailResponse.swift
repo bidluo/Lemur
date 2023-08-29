@@ -1,14 +1,15 @@
 import Foundation
 
-struct CommentDetailResponseRemote: Decodable {
-    var comment: CommentContentResponseRemote?
+struct CommentDetailResponse: Decodable {
+    var comment: CommentContentResponse?
     var creator: PersonResponse?
     var post: PostContentResponse?
-    var community: CommunityResponseRemote?
+    var community: CommunityResponse?
     var counts: CommentCounts?
     var creatorBannedFromCommunity: Bool?
     var subscribed: SubscribedResponse?
     var saved, creatorBlocked: Bool?
+    var myVote: Int?
     
     enum CodingKeys: String, CodingKey {
         case comment = "comment"
@@ -18,6 +19,7 @@ struct CommentDetailResponseRemote: Decodable {
         case creatorBannedFromCommunity = "creator_banned_from_community"
         case subscribed, saved, counts
         case creatorBlocked = "creator_blocked"
+        case myVote = "my_vote"
     }
 }
 

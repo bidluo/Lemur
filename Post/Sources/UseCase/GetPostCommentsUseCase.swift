@@ -53,6 +53,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
                 publishDate: comment.published,
                 creatorHome: nil,
                 score: comment.score,
+                myScore: comment.myVote, 
                 parentId: nil,
                 children: []
             )

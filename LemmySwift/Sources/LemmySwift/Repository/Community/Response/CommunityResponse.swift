@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CommunityResponseRemote: Decodable {
+public struct CommunityResponse: Decodable {
     public let id: Int?
     public let name, title: String?
     public let communityDescription: String?

@@ -12,4 +12,12 @@ public class CommentRepositoryRemote: NetworkType {
     func getComments(baseUrl: URL, postId: Int, sort: CommentSort) async throws -> CommentListResponse {
         return try await perform(baseUrl: baseUrl, http: CommentSpec.comments(postId, sort))
     }
+    
+    func getComment(baseUrl: URL, commentId: Int) async throws -> CommentDetailResponse {
+        return try await perform(baseUrl: baseUrl, http: CommentSpec.comment(commentId))
+    }
+    
+    func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> SingleCommentResponse {
+        return try await perform(baseUrl: siteUrl, http: CommentSpec.vote(request))
+    }
 }
