@@ -27,7 +27,8 @@ public class Comment {
     public var score: Int?
     public var upvotes: Int?
     public var downvotes: Int?
-    public var childCount, hotRank: Int?
+    public var childCount: Int?
+    public var hotRank: Int?
     
     public var myVote: Int?
     

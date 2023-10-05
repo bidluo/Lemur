@@ -35,7 +35,7 @@ class CommentVoteUseCase: UseCaseType {
         }
         
         let comment = try await repository.voteComment(
-            siteURL: input.siteUrl,
+            siteUrl: input.siteUrl,
             request: .init(commentId: input.commentId, score: score, auth: keychain.getToken(for: input.siteUrl))
         )
         

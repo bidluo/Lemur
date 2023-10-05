@@ -38,9 +38,12 @@ public class PostDetail {
     public var downvotes: Int?
     public var commentsCount: Int?
     
-    public var newestCommentTimeNecro, newestCommentTime: Date?
-    public var featuredCommunity, featuredLocal: Bool?
-    public var hotRank, hotRankActive: Int?
+    public var newestCommentTimeNecro: Date?
+    public var newestCommentTime: Date?
+    public var featuredCommunity: Bool?
+    public var featuredLocal: Bool?
+    public var hotRank: Int?
+    public var hotRankActive: Int?
     
     public var myVote: Int?
     

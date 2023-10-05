@@ -2,19 +2,21 @@ import Foundation
 import SwiftData
 
 actor CommunityRepositoryLocal: ModelActor {
-    nonisolated public let executor: any ModelExecutor
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
+    
     
     init(container: ModelContainer) {
+        self.modelContainer = container
         let context = ModelContext(container)
-        executor = DefaultModelExecutor(context: context)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
-    
     func mapCommunities(siteUrl: URL, communities: [CommunityOverviewResponse], saveLocally: Bool) -> [Community] {
         var siteFetch = FetchDescriptor<Site>()
         
         siteFetch.includePendingChanges = true
         
-        let sites = try? context.fetch(siteFetch)
+        let sites = try? modelContext.fetch(siteFetch)
         
         // `FetchDescriptor` `#Predicate` doesn't work with URL
         guard let site = sites?.first(where: { $0.url == siteUrl })
@@ -32,7 +34,7 @@ actor CommunityRepositoryLocal: ModelActor {
             } else if let newCommunity = Community(remote: community, idPrefix: site.id) {
                 localCommunity = newCommunity
                 if saveLocally {
-                    context.insert(newCommunity)
+                    modelContext.insert(newCommunity)
                 }
             } else {
                 return nil
@@ -41,7 +43,7 @@ actor CommunityRepositoryLocal: ModelActor {
             localCommunity.update(with: community)
             localCommunity.site = site
             
-            try? context.save()
+            try? modelContext.save()
             
             return localCommunity
         }
@@ -55,8 +57,8 @@ actor CommunityRepositoryLocal: ModelActor {
         communityFetch.fetchLimit = 1
         communityFetch.includePendingChanges = true
         
-        guard let fetchId = try? context.fetchIdentifiers(communityFetch).first,
-              let community = context.model(for: fetchId) as? Community
+        guard let fetchId = try? modelContext.fetchIdentifiers(communityFetch).first,
+              let community = modelContext.model(for: fetchId) as? Community
         else {
             return nil
         }

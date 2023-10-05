@@ -25,12 +25,12 @@ class GetPostCommentsUseCase: UseCaseStreamType {
         let commentsResponse = await repository.getComments(baseUrl: input.baseUrl, postId: input.postId, sort: input.sort)
         
         return await mapAsyncStream(commentsResponse, transform: { response in
-            let comments = self.handleComments(comments: response)
+            let comments = self.handleComments(postId: input.postId, comments: response)
             return Result(comments: comments)
         })
     }
     
-    private func handleComments(comments: [Comment]) -> [CommentContent] {
+    private func handleComments(postId: Int, comments: [Comment]) -> [CommentContent] {
         // A dictionary that maps from parent id to a list of child comments.
         var childrenDict: [Int: [CommentContent]] = [:]
         
@@ -47,6 +47,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
             
             var comment = CommentContent(
                 id: commentId,
+                postId: postId,
                 content: content,
                 creatorName: creator?.name ?? "",
                 creatorIsLocal: creator?.local ?? false,

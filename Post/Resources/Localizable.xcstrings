@@ -7,7 +7,16 @@
     "%@" : {
 
     },
+    "Bold" : {
+
+    },
+    "Cancel" : {
+
+    },
     "Comments..." : {
+
+    },
+    "Content" : {
 
     },
     "Lemur" : {
@@ -46,6 +55,9 @@
           }
         }
       }
+    },
+    "Replying to..." : {
+
     },
     "Top" : {
       "extractionState" : "manual"

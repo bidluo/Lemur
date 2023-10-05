@@ -2,11 +2,14 @@ import Foundation
 import SwiftData
 
 public actor UserRepositoryLocal: ModelActor {
-    nonisolated public let executor: any ModelExecutor
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
+    
     
     init(container: ModelContainer) {
+        self.modelContainer = container
         let context = ModelContext(container)
-        executor = DefaultModelExecutor(context: context)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
     func getPerson(siteUrl: URL, username: String) -> Person? {
@@ -17,8 +20,8 @@ public actor UserRepositoryLocal: ModelActor {
         userFetch.fetchLimit = 1
         userFetch.includePendingChanges = true
         
-        guard let fetchId = try? context.fetchIdentifiers(userFetch).first,
-              let user = context.model(for: fetchId) as? Person
+        guard let fetchId = try? modelContext.fetchIdentifiers(userFetch).first,
+              let user = modelContext.model(for: fetchId) as? Person
         else {
             return nil
         }
@@ -31,7 +34,7 @@ public actor UserRepositoryLocal: ModelActor {
             predicate: #Predicate { peopleIds.contains($0.id) }
         )
         
-        return try context.fetch(userFetch)
+        return try modelContext.fetch(userFetch)
     }
     
     func saveUser(siteUrl: URL, user: PersonDetailResponse?) -> Person? {
@@ -41,7 +44,7 @@ public actor UserRepositoryLocal: ModelActor {
         
         siteFetch.includePendingChanges = true
         
-        let sites = try? context.fetch(siteFetch)
+        let sites = try? modelContext.fetch(siteFetch)
         
         // `FetchDescriptor` `#Predicate` doesn't work with URL
         guard let site = sites?.first(where: { $0.url == siteUrl }) else {
@@ -54,7 +57,7 @@ public actor UserRepositoryLocal: ModelActor {
             localPerson = existingPerson
         } else if let newPerson = Person(remote: user?.personView?.person, idPrefix: site.id) {
             localPerson = newPerson
-            context.insert(newPerson)
+            modelContext.insert(newPerson)
         } else {
             return nil
         }

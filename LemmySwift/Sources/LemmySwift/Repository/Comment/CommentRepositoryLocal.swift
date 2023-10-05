@@ -3,11 +3,13 @@ import SwiftData
 
 public actor CommentRepositoryLocal: ModelActor {
     
-    nonisolated public let executor: any ModelExecutor
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
     
     init(container: ModelContainer) {
+        self.modelContainer = container
         let context = ModelContext(container)
-        executor = DefaultModelExecutor(context: context)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
     func getComments(postId: Int) -> [Comment] {
@@ -15,7 +17,7 @@ public actor CommentRepositoryLocal: ModelActor {
             predicate: #Predicate { $0.post?.rawId == postId }
         )
         
-        let comments = try? context.fetch(commentFetch)
+        let comments = try? modelContext.fetch(commentFetch)
         return comments ?? []
     }
     
@@ -29,7 +31,7 @@ public actor CommentRepositoryLocal: ModelActor {
         
         postFetch.fetchLimit = 1
         
-        guard let localPost = try? context.fetch(postFetch).first else { return [] }
+        guard let localPost = try? modelContext.fetch(postFetch).first else { return [] }
         
         let mappedComments = comments.compactMap { comment -> Comment? in
             saveComment(post: localPost, comment: comment)
@@ -48,7 +50,7 @@ public actor CommentRepositoryLocal: ModelActor {
             localComment.update(with: comment)
         } else if let newComment = Comment(remote: comment, idPrefix: "") {
             localComment = newComment
-            context.insert(newComment)
+            modelContext.insert(newComment)
         } else {
             return nil
         }
@@ -59,21 +61,21 @@ public actor CommentRepositoryLocal: ModelActor {
         )
         
         creatorFetch.fetchLimit = 1
-        if let fetchId = try? context.fetchIdentifiers(creatorFetch).first,
-           let existingCreator = context.model(for: fetchId) as? Person {
+        if let fetchId = try? modelContext.fetchIdentifiers(creatorFetch).first,
+           let existingCreator = modelContext.model(for: fetchId) as? Person {
             
             localCreator = existingCreator
             localCreator?.update(with: comment.creator)
         } else if let newCreator = Person(remote: comment.creator, idPrefix: "") {
             localCreator = newCreator
-            context.insert(newCreator)
+            modelContext.insert(newCreator)
         }
         
         if let localPost = post {
             localComment.post = localPost
         }
         localComment.creator = localCreator
-        context.insert(localComment)
+        modelContext.insert(localComment)
         
         return localComment
     }
@@ -87,8 +89,8 @@ public actor CommentRepositoryLocal: ModelActor {
         commentFetch.fetchLimit = 1
         commentFetch.includePendingChanges = true
         
-        guard let fetchId = try? context.fetchIdentifiers(commentFetch).first,
-              let comment = context.model(for: fetchId) as? Comment
+        guard let fetchId = try? modelContext.fetchIdentifiers(commentFetch).first,
+              let comment = modelContext.model(for: fetchId) as? Comment
         else {
             return nil
         }

@@ -2,17 +2,19 @@ import Foundation
 import SwiftData
 
 public actor SiteRepositoryLocal: ModelActor {
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
     
-    nonisolated public let executor: any ModelExecutor
     
     init(container: ModelContainer) {
+        self.modelContainer = container
         let context = ModelContext(container)
-        executor = DefaultModelExecutor(context: context)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
     func addSite(siteName: String, siteUrl: URL) {
         let site = Site(name: siteName, url: siteUrl, active: true)
-        context.insert(site)
+        modelContext.insert(site)
     }
     
     func getSites(activeOnly: Bool) -> [Site] {
@@ -22,10 +24,10 @@ public actor SiteRepositoryLocal: ModelActor {
                 predicate: #Predicate { $0.active == true }
             )
             
-            sites = (try? context.fetch(siteFetch)) ?? []
+            sites = (try? modelContext.fetch(siteFetch)) ?? []
         } else {
             let siteFetch = FetchDescriptor<Site>()
-            sites = (try? context.fetch(siteFetch)) ?? []
+            sites = (try? modelContext.fetch(siteFetch)) ?? []
         }
         
         return sites

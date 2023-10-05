@@ -4,12 +4,14 @@ enum CommentSpec: Spec {
     case comments(Int, CommentSort)
     case comment(Int)
     case vote(CommentVoteRequest)
+    case create(CommentCreateRequest)
     
     var method: HTTPMethod {
         switch self {
         case .comments(_, _): .get
         case .comment(_): .get
         case let .vote(request): .post(JSON.encode(obj: request))
+        case let .create(request): .post(JSON.encode(obj: request))
         }
     }
     
@@ -18,6 +20,7 @@ enum CommentSpec: Spec {
         case .comments(_, _): "comment/list"
         case .comment(_): "comment"
         case .vote(_): "comment/like"
+        case .create(_): "comment"
         }
     }
     

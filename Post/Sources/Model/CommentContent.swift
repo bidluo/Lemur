@@ -2,6 +2,7 @@ import Foundation
 
 struct CommentContent: Identifiable, Hashable, Equatable {
     let id: Int
+    let postId: Int
     let content: String
     let creatorName: String
     let creatorIsLocal: Bool

@@ -4,13 +4,22 @@ import Common
 
 struct PostDetailView: View {
     
-    private var store: PostDetailStore
-    private var errorHandler = ErrorHandling()
+    @State private var store: PostDetailStore
+    @State private var errorHandler = ErrorHandling()
+    @State private var composePresentedForComment: Int?
+    @State private var presentedSheet: PresentedSheet?
     private let id: Int
+    
+    private enum PresentedSheet: Identifiable, Hashable {
+        case composeComment(CommentContent)
+        
+        
+        var id: Int { return hashValue }
+    }
     
     init(siteUrl: URL, id: Int) {
         self.id = id
-        self.store = PostDetailStore(siteUrl: siteUrl, id: id)
+        self._store = State(wrappedValue: PostDetailStore(siteUrl: siteUrl, id: id))
     }
     
     var body: some View {
@@ -25,6 +34,9 @@ struct PostDetailView: View {
             
             NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
                 CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
+                    .replyTapped { comment in
+                        presentedSheet = .composeComment(comment)
+                    }
             }
             .disclosureGroupStyle(.arrowLess)
             .listRowInsets(EdgeInsets(.all, size: .zero))
@@ -54,5 +66,15 @@ struct PostDetailView: View {
         .task {
             executing(action: store.load, errorHandler: errorHandler)
         }
+        .sheet(item: $presentedSheet, content: { sheet in
+            switch sheet {
+            case let .composeComment(comment):
+                CommentComposeView(siteUrl: store.siteUrl, postId: id, parentId: comment.id)
+                    .onDisappear {
+                        // TODO: Load locally instead of remote
+                        executing(action: store.loadComments, errorHandler: errorHandler)
+                    }
+            }
+        })
     }
 }

@@ -3,7 +3,8 @@ import Foundation
 public protocol CommentRepositoryType {
     func getComments(baseUrl: URL, postId: Int, sort: CommentSort) async -> AsyncThrowingStream<[Comment], Error>
     func getComment(siteUrl: URL, commentId: Int, localOnly: Bool) async -> AsyncThrowingStream<Comment, Error>
-    func voteComment(siteURL: URL, request: CommentVoteRequest) async throws -> Comment
+    func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> Comment
+    func createComment(siteUrl: URL, request: CommentCreateRequest) async throws -> Comment
 }
 
 actor CommentRepositoryMain: CommentRepositoryType, RepositoryType {
@@ -46,8 +47,18 @@ actor CommentRepositoryMain: CommentRepositoryType, RepositoryType {
         }
     }
     
-    func voteComment(siteURL: URL, request: CommentVoteRequest) async throws -> Comment {
-        let response = try await remote.voteComment(siteUrl: siteURL, request: request)
+    func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> Comment {
+        let response = try await remote.voteComment(siteUrl: siteUrl, request: request)
+        
+        guard let localPost = await local.saveComment(post: nil, comment: response.comment) else {
+            throw NetworkFailure.invalidResponse
+        }
+        
+        return localPost
+    }
+    
+    func createComment(siteUrl: URL, request: CommentCreateRequest) async throws -> Comment {
+        let response = try await remote.createComment(siteUrl: siteUrl, request: request)
         
         guard let localPost = await local.saveComment(post: nil, comment: response.comment) else {
             throw NetworkFailure.invalidResponse

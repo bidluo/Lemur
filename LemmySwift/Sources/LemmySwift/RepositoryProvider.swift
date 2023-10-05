@@ -22,7 +22,7 @@ public class RepositoryProvider: RepositoryProviderType {
         self.keychain = keychain
         
         // TODO: Handle migrations
-        container = try! ModelContainer(for: [PostDetail.self, Community.self])
+        container = try! ModelContainer(for: PostDetail.self, Community.self)
         
         let siteRemote = SiteRepositoryRemote(urlSession: urlSession, keychain: keychain)
         let siteLocal = SiteRepositoryLocal(container: container)

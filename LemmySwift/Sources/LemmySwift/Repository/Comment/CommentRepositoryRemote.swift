@@ -20,4 +20,8 @@ public class CommentRepositoryRemote: NetworkType {
     func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> SingleCommentResponse {
         return try await perform(baseUrl: siteUrl, http: CommentSpec.vote(request))
     }
+    
+    func createComment(siteUrl: URL, request: CommentCreateRequest) async throws -> SingleCommentResponse {
+        return try await perform(baseUrl: siteUrl, http: CommentSpec.create(request))
+    }
 }

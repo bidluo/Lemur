@@ -5,8 +5,11 @@ import Common
 struct CommentView: View {
     
     @State var comment: CommentContent
+//    @Binding var composePresentedForComment: Int?
     let siteUrl: URL
     let nestLevel: Int
+    
+    var replyTapped: ((CommentContent) -> Void)?
     
     @State private var errorHandling = ErrorHandling()
     @UseCase private var voteUseCase: CommentVoteUseCase
@@ -76,12 +79,21 @@ struct CommentView: View {
         })
         .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
             Button(action: {
+//                composePresentedForComment = comment.id
+                replyTapped?(comment)
+            }, label: {
+                Image(systemName: "arrowshape.turn.up.left.fill")
+            })
+            .tint(Color.green)
+            
+            Button(action: {
                 vote(type: .down)
             }, label: {
                 Image(systemName: myScore < 0 ? "arrow.uturn.down" : "arrow.down")
             })
             .tint(Color.blue)
         })
+
     }
     
     private func vote(type: VoteType) {
@@ -93,6 +105,14 @@ struct CommentView: View {
             },
             errorHandler: errorHandling
         )
+    }
+}
+
+extension CommentView {
+    func replyTapped(_ handler: @escaping (CommentContent) -> Void) -> CommentView {
+        var new = self
+        new.replyTapped = handler
+        return new
     }
 }
 

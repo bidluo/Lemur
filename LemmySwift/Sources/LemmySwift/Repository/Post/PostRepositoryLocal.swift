@@ -2,15 +2,18 @@ import Foundation
 import SwiftData
 
 actor PostRepositoryLocal: ModelActor {
-    nonisolated public let executor: any ModelExecutor
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
+    
     
     init(container: ModelContainer) {
+        self.modelContainer = container
         let context = ModelContext(container)
-        executor = DefaultModelExecutor(context: context)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
     func getPosts() async -> [PostDetail]? {
-        return try? context.fetch(FetchDescriptor<PostDetail>())
+        return try? modelContext.fetch(FetchDescriptor<PostDetail>())
     }
     
     func savePosts(siteUrl: URL, posts: [PostDetailResponse], storeLocally: Bool = true) -> [PostDetail] {
@@ -18,7 +21,7 @@ actor PostRepositoryLocal: ModelActor {
         
         siteFetch.includePendingChanges = true
         
-        let sites = try? context.fetch(siteFetch)
+        let sites = try? modelContext.fetch(siteFetch)
         
         // `FetchDescriptor` `#Predicate` doesn't work with URL
         guard let site = sites?.first(where: { $0.url == siteUrl })
@@ -36,7 +39,7 @@ actor PostRepositoryLocal: ModelActor {
         
         siteFetch.includePendingChanges = true
         
-        let sites = try? context.fetch(siteFetch)
+        let sites = try? modelContext.fetch(siteFetch)
         
         // `FetchDescriptor` `#Predicate` doesn't work with URL
         guard let site = sites?.first(where: { $0.url == siteUrl })
@@ -58,7 +61,7 @@ actor PostRepositoryLocal: ModelActor {
             localPost = newPost
             
             if storeLocally {
-                context.insert(newPost)
+                modelContext.insert(newPost)
             }
         } else {
             return nil
@@ -69,7 +72,7 @@ actor PostRepositoryLocal: ModelActor {
         localPost.creator = Person(remote: post?.creator, idPrefix: site.id)
         localPost.site = site
         
-        try? context.save()
+        try? modelContext.save()
         
         return localPost
     }
@@ -82,8 +85,8 @@ actor PostRepositoryLocal: ModelActor {
         postFetch.fetchLimit = 1
         postFetch.includePendingChanges = true
         
-        guard let fetchId = try? context.fetchIdentifiers(postFetch).first,
-              let post = context.model(for: fetchId) as? PostDetail
+        guard let fetchId = try? modelContext.fetchIdentifiers(postFetch).first,
+              let post = modelContext.model(for: fetchId) as? PostDetail
         else {
             return nil
         }
