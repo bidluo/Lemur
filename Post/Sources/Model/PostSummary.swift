@@ -13,6 +13,7 @@ struct PostSummary: Hashable {
     let communityName: String?
     let communityThumbnail: URL?
     let score: String
+    let commentCount: Int
     let siteUrl: URL
     let myVote: Int
     
@@ -45,6 +46,7 @@ struct PostSummary: Hashable {
         self.communityName = community?.name
         self.communityThumbnail = community?.icon
         self.score = post?.score?.formatted() ?? ""
+        self.commentCount = post?.commentsCount ?? 0
         self.siteUrl = _site.url
         self.myVote = post?.myVote ?? 0
     }
@@ -61,6 +63,7 @@ struct PostSummary: Hashable {
         communityName: String,
         communityThumbnail: URL? = nil,
         score: String,
+        commentCount: Int? = nil,
         siteUrl: URL
     ) {
         self.id = id
@@ -74,6 +77,7 @@ struct PostSummary: Hashable {
         self.communityName = communityName
         self.communityThumbnail = communityThumbnail
         self.score = score
+        self.commentCount = commentCount ?? 0
         self.siteUrl = siteUrl
         self.myVote = 0
     }

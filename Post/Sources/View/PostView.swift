@@ -51,6 +51,10 @@ struct PostView: View {
                 
                 Spacer()
                 
+                Text("\(post.commentCount)")
+                    .font(.footnote)
+                    .fontDesign(.monospaced)
+                
                 Text(post.score)
                     .font(.footnote)
                     .fontDesign(.monospaced)

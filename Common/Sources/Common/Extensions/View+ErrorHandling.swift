@@ -92,46 +92,61 @@ public extension View {
         )
     }
     
-    private func executeAction(
-        _ action: @escaping () async throws -> (),
+    /// Executes a given asynchronous action that might throw an error, with an optional delay.
+    ///
+    /// This function is suitable for use with SwiftUI's `.task` modifier, as it enables the platform to
+    /// automatically cancel the operation when required.
+    ///
+    /// - Parameters:
+    ///   - action: An async closure that contains the code to execute.
+    ///   - duration: Optional delay before executing the action, specified as a `Duration`.
+    ///   - errorHandler: An object conforming to `ErrorHandling` for handling errors.
+    ///   - completion: An optional closure to call upon successful execution of the action.
+    ///   - catching: An optional closure that gets invoked if `action` throws an error. Return `true` to swallow the error, `false` to proceed to `errorHandler`.
+    ///
+    func executingTask(
+        action: @escaping () async throws -> (),
+        after duration: Duration? = nil,
+        errorHandler: ErrorHandling,
+        completion: (() -> ())? = nil,
+        catching: ((Error) -> (Bool))? = nil
+    ) async {
+        do {
+            if let _duration = duration {
+                try await Task.sleep(for: _duration)
+            }
+            try await action()
+            DispatchQueue.main.async {
+                completion?()
+            }
+        } catch {
+            if catching?(error) == false {
+                errorHandler.handle(error: error)
+            }
+        }
+    }
+    
+    /// Executes a given asynchronous action, similar to `executingTask`, but with a user-initiated priority.
+    ///
+    /// This function is ideal for cases where SwiftUI's `.task` modifier is not used, such as within buttons.
+    ///
+    /// - Parameters:
+    ///   - action: An async closure that contains the code to execute.
+    ///   - duration: Optional delay before executing the action, specified as a `Duration`.
+    ///   - errorHandler: An object conforming to `ErrorHandling` for handling errors.
+    ///   - completion: An optional closure to call upon successful execution of the action.
+    ///   - catching: An optional closure that gets invoked if `action` throws an error. Return `true` to swallow the error, `false` to proceed to `errorHandler`.
+    ///
+    func executing(
+        action: @escaping () async throws -> (),
         after duration: Duration? = nil,
         errorHandler: ErrorHandling,
         completion: (() -> ())? = nil,
         catching: ((Error) -> (Bool))? = nil
     ) {
         Task(priority: .userInitiated) {
-            do {
-                if let _duration = duration {
-                    try await Task.sleep(for: _duration)
-                }
-                try await action()
-                DispatchQueue.main.async {
-                    completion?()
-                }
-            } catch {
-                if catching?(error) == false {
-                    errorHandler.handle(error: error)
-                }
-            }
+            executingTask(action:after:errorHandler:completion:catching:)
         }
-    }
-    
-    func executing(
-        action: @escaping () async throws -> (),
-        after duration: Duration? = nil,
-        errorHandler: ErrorHandling,
-        completion: (() -> ())? = nil
-    ) {
-        executeAction(action, after: duration, errorHandler: errorHandler, completion: completion, catching: nil)
-    }
-    
-    func executing(
-        action: @escaping () async throws -> (),
-        errorHandler: ErrorHandling,
-        completion: (() -> ())? = nil,
-        catching: @escaping (Error) -> (Bool)
-    ) {
-        executeAction(action, after: nil, errorHandler: errorHandler, completion: completion, catching: catching)
     }
 }
 

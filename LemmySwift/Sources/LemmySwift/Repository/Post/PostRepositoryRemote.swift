@@ -9,12 +9,12 @@ public class PostRepositoryRemote: NetworkType {
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    func getPosts(baseUrl: URL, sort: PostSort) async throws -> PostListResponse {
-        return try await perform(baseUrl: baseUrl, http: PostSpec.posts(sort))
+    func getPosts(baseUrl: URL, request: GetPostRequest) async throws -> PostListResponse {
+        return try await perform(baseUrl: baseUrl, http: PostSpec.posts(request))
     }
     
-    func getCommunityPosts(baseUrl: URL, communityId: Int, sort: PostSort) async throws -> PostListResponse {
-        return try await perform(baseUrl: baseUrl, http: PostSpec.communityPosts(communityId, sort))
+    func getCommunityPosts(baseUrl: URL, communityId: Int, request: GetPostRequest) async throws -> PostListResponse {
+        return try await perform(baseUrl: baseUrl, http: PostSpec.communityPosts(communityId, request))
     }
     
     func getPost(baseUrl: URL, id: Int) async throws -> PostResponseRemote {

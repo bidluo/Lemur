@@ -60,11 +60,12 @@ struct PostDetailView: View {
                 })
             })
         }
+        .withErrorHandling(errorHandling: errorHandler)
         .task(id: store.selectedSort, {
-            executing(action: store.loadComments, errorHandler: errorHandler)
+            await executingTask(action: store.loadComments, errorHandler: errorHandler)
         })
         .task {
-            executing(action: store.load, errorHandler: errorHandler)
+            await executingTask(action: store.load, errorHandler: errorHandler)
         }
         .sheet(item: $presentedSheet, content: { sheet in
             switch sheet {

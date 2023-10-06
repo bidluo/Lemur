@@ -12,12 +12,17 @@ public struct PostListView: View {
     
     public var body: some View {
         List {
-            ForEach(store.rows, id: \.id) { item in
+            ForEach(store.rows, id: \.self) { item in
                 NavigationLinkWithoutChevron(value: item, label: {
                     PostView(post: item, fullView: false)
                 })
                 .listRowInsets(EdgeInsets([.vertical], size: .small))
                 .listRowSeparator(.hidden, edges: .all)
+                .task {
+                    if item.id == store.lastRowId {
+                        await executingTask(action: store.loadNextPage, errorHandler: errorHandler)
+                    }
+                }
             }
         }
         .listRowSpacing(Size.smallMedium.rawValue)
@@ -26,12 +31,18 @@ public struct PostListView: View {
             ToolbarItem(placement: .topBarTrailing, content: {
                 Menu(content: {
                     ForEach(store.mainItems, id: \.self) { item in
-                        Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                        Button(action: { 
+                            store.selectedSort = item
+                            executing(action: store.reload, errorHandler: errorHandler)
+                        }, label: { Text(item.rawValue) })
                     }
                     
                     Menu(content: {
                         ForEach(store.topItems, id: \.self) { item in
-                            Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                            Button(action: { 
+                                store.selectedSort = item
+                            executing(action: store.reload, errorHandler: errorHandler)
+                            }, label: { Text(item.rawValue) })
                         }
                     }, label: {
                         Text("Top...")
@@ -39,7 +50,10 @@ public struct PostListView: View {
                     
                     Menu(content: {
                         ForEach(store.commentItems, id: \.self) { item in
-                            Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                            Button(action: {
+                                store.selectedSort = item
+                                executing(action: store.reload, errorHandler: errorHandler)
+                            }, label: { Text(item.rawValue) })
                         }
                     }, label: {
                         Text("Comments...")
@@ -63,11 +77,8 @@ public struct PostListView: View {
             PostDetailView(siteUrl: post.siteUrl, id: post.id)
                 .id(post.id)
         })
-        .task(id: store.selectedSort) {
-            executing(action: store.reload, errorHandler: errorHandler)
-        }
         .task {
-            executing(action: store.load, errorHandler: errorHandler)
+            await executingTask(action: store.load, errorHandler: errorHandler)
         }
         .transaction { transaction in
             transaction.dismissBehavior = .interactive

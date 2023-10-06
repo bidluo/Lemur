@@ -1,8 +1,8 @@
 import Foundation
 
 public protocol PostRepositoryType {
-    func getPosts(sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error>
-    func getCommunityPosts(siteUrl: URL, communityId: Int, sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error>
+    func getPosts(request: GetPostRequest) async -> AsyncThrowingStream<[PostDetail], Error>
+    func getCommunityPosts(siteUrl: URL, communityId: Int, request: GetPostRequest) async -> AsyncThrowingStream<[PostDetail], Error>
     func getPost(siteUrl: URL, id: Int, localOnly: Bool) async -> AsyncThrowingStream<PostDetail, Error>
     func votePost(siteURL: URL, request: PostVoteRequest) async throws -> PostDetail
 }
@@ -23,7 +23,7 @@ public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
         self.siteRepository = siteRepository
     }
     
-    public func getPosts(sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error> {
+    public func getPosts(request: GetPostRequest) async -> AsyncThrowingStream<[PostDetail], Error> {
         return fetchFromSources(
             localDataSource: local.getPosts,
             remoteDataSource: { [weak self] in
@@ -34,7 +34,7 @@ public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
                 try await withThrowingTaskGroup(of: [PostDetail].self) { group in
                     for site in sites {
                         group.addTask {
-                            let postList = try await self.remote.getPosts(baseUrl: site, sort: sort).posts
+                            let postList = try await self.remote.getPosts(baseUrl: site, request: request).posts
                             let mappedPosts = await self.local.savePosts(siteUrl: site, posts: postList ?? [])
                             return mappedPosts
                         }
@@ -52,20 +52,20 @@ public actor PostRepositoryMain: PostRepositoryType, RepositoryType {
                     return _remotePosts
                 }
                 
-                if remoteResponse == nil {
-                    return localResponse
-                }
+//                if remoteResponse == nil {
+//                    return localResponse
+//                }
                 
                 return []
             }
         )
     }
     
-    public func getCommunityPosts(siteUrl: URL, communityId: Int, sort: PostSort) async -> AsyncThrowingStream<[PostDetail], Error> {
+    public func getCommunityPosts(siteUrl: URL, communityId: Int, request: GetPostRequest) async -> AsyncThrowingStream<[PostDetail], Error> {
         return fetchFromSources(localDataSource: {
             return [PostDetail]()
         }, remoteDataSource: {
-            let postList = try await self.remote.getCommunityPosts(baseUrl: siteUrl, communityId: communityId, sort: sort).posts
+            let postList = try await self.remote.getCommunityPosts(baseUrl: siteUrl, communityId: communityId, request: request).posts
             let mappedPosts = await self.local.savePosts(siteUrl: siteUrl, posts: postList ?? [], storeLocally: true)
             return mappedPosts
         }, transform: { localResponse, remoteResponse in

@@ -1,8 +1,8 @@
 import Foundation
 
 enum PostSpec: Spec {
-    case posts(PostSort)
-    case communityPosts(Int, PostSort)
+    case posts(GetPostRequest)
+    case communityPosts(Int, GetPostRequest)
     case post(Int)
     case vote(PostVoteRequest)
     
@@ -27,13 +27,17 @@ enum PostSpec: Spec {
     var query: [URLQueryItem] {
         switch self {
         case let .post(id): [URLQueryItem(name: "id", value: String(id))]
-        case let .posts(sort): [
-            URLQueryItem(name: "sort", value: sort.rawValue),
+        case let .posts(request): [
+            URLQueryItem(name: "sort", value: request.sort.rawValue),
+            URLQueryItem(name: "limit", value: "\(request.limit)"),
+            URLQueryItem(name: "page", value: "\(request.page)")
         ]
-        case let .communityPosts(communityId, sort):
+        case let .communityPosts(communityId, request):
             [
-                URLQueryItem(name: "sort", value: sort.rawValue),
-                URLQueryItem(name: "community_id", value: String(communityId))
+                URLQueryItem(name: "sort", value: request.sort.rawValue),
+                URLQueryItem(name: "community_id", value: String(communityId)),
+                URLQueryItem(name: "limit", value: "\(request.limit)"),
+                URLQueryItem(name: "page", value: "\(request.page)")
             ]
         default: []
         }

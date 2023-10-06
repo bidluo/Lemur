@@ -10,6 +10,8 @@ class PostListStore {
     
     var rows: [PostSummary] = []
     var selectedSort: GetPostListUseCase.Sort = .hot
+    var lastRowId: Int?
+    var page: Int = 1
     
     private var siteUrl: URL?
     private var communityId: Int?
@@ -43,15 +45,30 @@ class PostListStore {
         try await load()
     }
     
+    func loadNextPage() async throws {
+        needsLoad = true
+        page += 1
+        try await load()
+    }
+    
     func load() async throws {
         guard needsLoad == true else { return }
         defer {
             needsLoad = false
         }
         
-        for try await posts in await useCase.call(input: .init(siteUrl: siteUrl, communityId: communityId, sort: selectedSort)) {
-            rows = posts.posts
+        async let result = useCase.call(
+            input: .init(
+                siteUrl: siteUrl,
+                communityId: communityId,
+                sort: selectedSort,
+                page: page
+            )
+        )
+        
+        for try await posts in await result {
+            rows.append(contentsOf: posts.posts)
+            lastRowId = posts.posts.last?.id
         }
     }
-    
 }
