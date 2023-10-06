@@ -78,7 +78,7 @@ public struct PostListView: View {
                 .id(post.id)
         })
         .task {
-            await executingTask(action: store.load, errorHandler: errorHandler)
+            await executingTask(action: { try await store.load() }, errorHandler: errorHandler)
         }
         .transaction { transaction in
             transaction.dismissBehavior = .interactive

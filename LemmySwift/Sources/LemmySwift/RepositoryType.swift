@@ -11,7 +11,7 @@ extension RepositoryType {
         transform: @escaping (LocalType?, RemoteType?) async throws -> ResultType?
     ) -> AsyncThrowingStream<ResultType, Error> {
         let stream = AsyncThrowingStream<ResultType, Error> { continuation in
-            Task {
+            Task.detached {
                 let localData = try await localDataSource()
                 if let localResult = try await transform(localData, nil) {
                     continuation.yield(localResult)

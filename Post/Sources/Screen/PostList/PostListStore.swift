@@ -42,7 +42,7 @@ class PostListStore {
     
     func reload() async throws {
         needsLoad = true
-        try await load()
+        try await load(replacingAll: true)
     }
     
     func loadNextPage() async throws {
@@ -51,7 +51,7 @@ class PostListStore {
         try await load()
     }
     
-    func load() async throws {
+    func load(replacingAll: Bool = false) async throws {
         guard needsLoad == true else { return }
         defer {
             needsLoad = false
@@ -67,7 +67,12 @@ class PostListStore {
         )
         
         for try await posts in await result {
-            rows.append(contentsOf: posts.posts)
+            if replacingAll {
+                rows = posts.posts
+            } else {
+                rows.append(contentsOf: posts.posts)
+            }
+            
             lastRowId = posts.posts.last?.id
         }
     }

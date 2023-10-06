@@ -145,7 +145,13 @@ public extension View {
         catching: ((Error) -> (Bool))? = nil
     ) {
         Task(priority: .userInitiated) {
-            executingTask(action:after:errorHandler:completion:catching:)
+            await executingTask(
+                action: action,
+                after: duration,
+                errorHandler: errorHandler,
+                completion: completion,
+                catching: catching
+            )
         }
     }
 }

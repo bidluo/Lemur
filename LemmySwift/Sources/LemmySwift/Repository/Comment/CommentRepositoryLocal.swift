@@ -21,7 +21,7 @@ public actor CommentRepositoryLocal: ModelActor {
         return comments ?? []
     }
     
-    func saveComments(comments: [CommentDetailResponse]) -> [Comment] {
+    func saveComments(comments: [CommentDetailResponse]) async -> [Comment] {
         let post = comments.first?.post
         guard let postId = post?.id else { return [] }
         
@@ -33,14 +33,14 @@ public actor CommentRepositoryLocal: ModelActor {
         
         guard let localPost = try? modelContext.fetch(postFetch).first else { return [] }
         
-        let mappedComments = comments.compactMap { comment -> Comment? in
-            saveComment(post: localPost, comment: comment)
+        let mappedComments = await comments.asyncCompactMap { [weak self] comment -> Comment? in
+            await self?.saveComment(post: localPost, comment: comment)
         }
         
         return mappedComments
     }
     
-    func saveComment(post: PostDetail?, comment: CommentDetailResponse) -> Comment? {
+    func saveComment(post: PostDetail?, comment: CommentDetailResponse) async -> Comment? {
         guard let commentId = comment.comment?.id, let creatorId = comment.creator?.id else { return nil }
         
         // Upsert comment
