@@ -6,28 +6,42 @@ import Factory
 class GetCommunitiesUseCase: UseCaseType {
     @Injected(\.communityRepository) private var repository: CommunityRepositoryType
     
-    typealias Input = Void
+    struct Input {
+        let siteUrl: URL
+    }
     
     struct Result {
         let communities: [Community]
         
-        struct Community {
-            let id: String
+        struct Community: Hashable {
+            let id: Int
+            let name: String
+            let siteUrl: URL?
+            let thumbnailUrl: URL?
+            let description: String
+            let postCount: Int
+            let subsciberCount: Int
+            let dailyActiveUserCount: Int
         }
     }
     
     required init() {
     }
     
-    func call(input: Void) async throws -> Result {
-        let communitiesResponse = try await repository.getCommunities()
-        
-        let communities = communitiesResponse.communities?.compactMap { community -> Result.Community? in
-            guard let _community = community.community, let id = _community.title else { return nil }
-            
-            return Result.Community(id: id)
+    func call(input: Input) async throws -> Result {
+        let communities = try await repository.getCommunities(siteUrl: input.siteUrl).map { item in
+            return Result.Community(
+                id: item.rawId,
+                name: item.title ?? "",
+                siteUrl: item.siteUrl,
+                thumbnailUrl: item.icon,
+                description: item.communityDescription ?? "",
+                postCount: item.postCount ?? 0,
+                subsciberCount: item.subscriberCount ?? 0,
+                dailyActiveUserCount: item.dailyActiveUserCount ?? 0
+            )
         }
         
-        return Result(communities: communities ?? [])
+        return Result(communities: communities)
     }
 }

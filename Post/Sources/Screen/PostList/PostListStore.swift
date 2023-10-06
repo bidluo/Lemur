@@ -10,15 +10,15 @@ class PostListStore {
     
     var rows: [PostSummary] = []
     var selectedSort: GetPostListUseCase.Sort = .hot
+    var lastRowId: Int?
+    var page: Int = 1
     
+    private var siteUrl: URL?
+    private var communityId: Int?
+    private var needsLoad = true
     
-    @ObservationIgnored
     public var mainItems: [GetPostListUseCase.Sort] { return [.hot, .active, .old, .new] }
-    
-    @ObservationIgnored
     public var commentItems: [GetPostListUseCase.Sort] { return [.mostComments, .newComments] }
-    
-    @ObservationIgnored
     public var topItems: [GetPostListUseCase.Sort] {
         return [
             .topHour,
@@ -35,12 +35,40 @@ class PostListStore {
         ]
     }
     
-    init() {
+    init(siteUrl: URL? = nil, communityId: Int? = nil) {
+        self.siteUrl = siteUrl
+        self.communityId = communityId
+    }
+    
+    func reload() async throws {
+        needsLoad = true
+        try await load()
+    }
+    
+    func loadNextPage() async throws {
+        needsLoad = true
+        page += 1
+        try await load()
     }
     
     func load() async throws {
-        for try await posts in await useCase.call(input: .init(sort: selectedSort)) {
-            rows = posts.posts
+        guard needsLoad == true else { return }
+        defer {
+            needsLoad = false
+        }
+        
+        async let result = useCase.call(
+            input: .init(
+                siteUrl: siteUrl,
+                communityId: communityId,
+                sort: selectedSort,
+                page: page
+            )
+        )
+        
+        for try await posts in await result {
+            rows.append(contentsOf: posts.posts)
+            lastRowId = posts.posts.last?.id
         }
     }
 }

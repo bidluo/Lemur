@@ -5,12 +5,22 @@ import SwiftUI
 
 extension Container {
     var repositoryProvider: Factory<RepositoryProviderType> {
-        Factory(self) { RepositoryProvider() }.singleton
+        Factory(self) { RepositoryProvider(keychain: Keychain()) }.singleton
     }
 }
 
 public extension Container {
-    var postRepository: Factory<PostRepositoryType> {
+    var keychain: Factory<KeychainType> {
+        Factory(self) { Keychain() }.singleton
+    }
+    
+    var userDefaults: Factory<UserDefaultsType> {
+        Factory(self) { UserDefaults.standard }
+    }
+}
+
+public extension Container {
+    var authenticationRepository: Factory<AuthenticationRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
     
@@ -19,6 +29,18 @@ public extension Container {
     }
     
     var communityRepository: Factory<CommunityRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var postRepository: Factory<PostRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var siteRepository: Factory<SiteRepositoryType> {
+        Factory(self) { self.repositoryProvider().inject() }
+    }
+    
+    var userRepository: Factory<UserRepositoryType> {
         Factory(self) { self.repositoryProvider().inject() }
     }
 }

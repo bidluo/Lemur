@@ -7,6 +7,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     @Injected(\.commentRepository) private var repository: CommentRepositoryType
     
     struct Input {
+        public let baseUrl: URL
         public let postId: Int
         public let sort: Sort
     }
@@ -21,38 +22,39 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     }
     
     func call(input: Input) async -> AsyncThrowingStream<Result, Error>  {
-        let commentsResponse = await repository.getComments(postId: input.postId, sort: input.sort)
+        let commentsResponse = await repository.getComments(baseUrl: input.baseUrl, postId: input.postId, sort: input.sort)
         
-        return mapAsyncStream(commentsResponse, transform: { response in
-            let comments = self.handleComments(comments: response)
+        return await mapAsyncStream(commentsResponse, transform: { response in
+            let comments = self.handleComments(postId: input.postId, comments: response)
             return Result(comments: comments)
         })
     }
     
-    private func handleComments(comments: [CommentDetailResponse]) -> [CommentContent] {
+    private func handleComments(postId: Int, comments: [Comment]) -> [CommentContent] {
         // A dictionary that maps from parent id to a list of child comments.
         var childrenDict: [Int: [CommentContent]] = [:]
         
         var commentsDict: [Int: CommentContent] = [:]
         
-        comments.forEach { commentResponse in
-            let commentContent = commentResponse.comment
+        comments.forEach { comment in
+            let commentId = comment.rawId
             guard
-                let commentId = commentContent?.id,
-                let content = commentContent?.content,
-                let path = commentContent?.path
+                let content = comment.content,
+                let path = comment.path
             else { return }
             
-            let creator = commentResponse.creator
+            let creator = comment.creator
             
             var comment = CommentContent(
                 id: commentId,
+                postId: postId,
                 content: content,
                 creatorName: creator?.name ?? "",
                 creatorIsLocal: creator?.local ?? false,
-                publishDate: commentResponse.counts?.published,
+                publishDate: comment.published,
                 creatorHome: nil,
-                score: commentResponse.counts?.score,
+                score: comment.score,
+                myScore: comment.myVote, 
                 parentId: nil,
                 children: []
             )

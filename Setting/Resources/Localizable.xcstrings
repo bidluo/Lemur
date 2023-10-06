@@ -1,0 +1,53 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add server" : {
+
+    },
+    "Add user" : {
+
+    },
+    "Enter server URL" : {
+
+    },
+    "lemmy.ml" : {
+
+    },
+    "lemmy.world" : {
+
+    },
+    "Logged in users" : {
+
+    },
+    "Password" : {
+
+    },
+    "Recommendations" : {
+
+    },
+    "ScreenTItle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen title"
+          }
+        }
+      }
+    },
+    "Server URL" : {
+
+    },
+    "Servers" : {
+
+    },
+    "Sign in" : {
+
+    },
+    "Username or email" : {
+
+    }
+  },
+  "version" : "1.0"
+}

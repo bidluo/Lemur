@@ -1,56 +1,96 @@
 import Foundation
 import SwiftData
 
-public actor PostRepositoryLocal {
+actor PostRepositoryLocal: ModelActor {
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
     
-    private let context: ModelContext?
     
-    init(context: ModelContext?) {
-        self.context = context
+    init(container: ModelContainer) {
+        self.modelContainer = container
+        let context = ModelContext(container)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
-    func getPosts() async -> PostListResponseLocal {
-        let posts = try? context?.fetch(FetchDescriptor<PostDetailResponseLocal>())
-        return PostListResponseLocal(posts: posts)
+    func getPosts() async -> [PostDetail]? {
+        return try? modelContext.fetch(FetchDescriptor<PostDetail>())
     }
     
-    func savePosts(posts: [PostDetailResponseRemote]) async {
-        // TODO: Figure out how to do batch when there's actually documentation
-        posts.forEach { post in
-            try? context?.transaction {
-                let communityId = post.rawCommunity?.id
-                let creatorId = post.rawCreator?.id
-                let communityFetch = FetchDescriptor<CommunityResponseLocal>(
-                    predicate: #Predicate { $0.id != nil && $0.id == communityId }
-                )
-                
-                let creatorFetch = FetchDescriptor<CreatorResponseLocal>(
-                    predicate: #Predicate { $0.id != nil && $0.id == creatorId }
-                )
-                
-                var community = try? context?.fetch(communityFetch).first
-                var creator = try? context?.fetch(creatorFetch).first
-                if community == nil {
-                    community = CommunityResponseLocal(remote: post.rawCommunity)
-                }
-                
-                if creator == nil {
-                    creator = CreatorResponseLocal(remote: post.rawCreator)
-                }
-                
-                guard let localPost = PostDetailResponseLocal(remote: post) else { return }
-                localPost.rawCommunity = community
-                localPost.rawCreator = creator
-                self.context?.insert(object: localPost)
-            }
+    func savePosts(siteUrl: URL, posts: [PostDetailResponse], storeLocally: Bool = true) -> [PostDetail] {
+        var siteFetch = FetchDescriptor<Site>()
+        
+        siteFetch.includePendingChanges = true
+        
+        let sites = try? modelContext.fetch(siteFetch)
+        
+        // `FetchDescriptor` `#Predicate` doesn't work with URL
+        guard let site = sites?.first(where: { $0.url == siteUrl })
+        else {
+            return []
+        }
+        
+        return posts.compactMap { post -> PostDetail? in
+            savePost(site: site, post: post)
         }
     }
     
-    func getPost(id: Int) async -> PostDetailResponse? {
-        let postFetch = FetchDescriptor<PostDetailResponseLocal>(
-            predicate: #Predicate { $0.rawPost?.id == id }
+    func savePost(siteUrl: URL, post: PostDetailResponse?, storeLocally: Bool = true) -> PostDetail? {
+        var siteFetch = FetchDescriptor<Site>()
+        
+        siteFetch.includePendingChanges = true
+        
+        let sites = try? modelContext.fetch(siteFetch)
+        
+        // `FetchDescriptor` `#Predicate` doesn't work with URL
+        guard let site = sites?.first(where: { $0.url == siteUrl })
+        else {
+            return nil
+        }
+        
+        return self.savePost(site: site, post: post)
+    }
+    
+    func savePost(site: Site, post: PostDetailResponse?, storeLocally: Bool = true) -> PostDetail? {
+        guard let id = post?.post?.id else { return nil }
+        
+        // Without doing this accessing the model from main thread violates thread access
+        let localPost: PostDetail
+        if let existingPost = getPost(id: id) {
+            localPost = existingPost
+        } else if let newPost = PostDetail(remote: post, idPrefix: site.id) {
+            localPost = newPost
+            
+            if storeLocally {
+                modelContext.insert(newPost)
+            }
+        } else {
+            return nil
+        }
+        
+        localPost.update(with: post)
+        localPost.community = Community(remote: post?.community, idPrefix: site.id)
+        localPost.creator = Person(remote: post?.creator, idPrefix: site.id)
+        localPost.site = site
+        
+        try? modelContext.save()
+        
+        return localPost
+    }
+    
+    func getPost(id: Int) -> PostDetail? {
+        var postFetch = FetchDescriptor<PostDetail>(
+            predicate: #Predicate { $0.rawId == id }
         )
         
-        return try? context?.fetch(postFetch).first
+        postFetch.fetchLimit = 1
+        postFetch.includePendingChanges = true
+        
+        guard let fetchId = try? modelContext.fetchIdentifiers(postFetch).first,
+              let post = modelContext.model(for: fetchId) as? PostDetail
+        else {
+            return nil
+        }
+        
+        return post
     }
 }

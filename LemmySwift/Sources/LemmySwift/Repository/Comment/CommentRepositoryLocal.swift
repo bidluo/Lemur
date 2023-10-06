@@ -1,51 +1,100 @@
 import Foundation
 import SwiftData
 
-public actor CommentRepositoryLocal {
+public actor CommentRepositoryLocal: ModelActor {
     
-    private let context: ModelContext?
+    nonisolated public let modelContainer: ModelContainer
+    nonisolated public let modelExecutor: ModelExecutor
     
-    init(context: ModelContext?) {
-        self.context = context
+    init(container: ModelContainer) {
+        self.modelContainer = container
+        let context = ModelContext(container)
+        modelExecutor = DefaultSerialModelExecutor(modelContext: context)
     }
     
-    func getComments(postId: Int) async -> [CommentDetailResponseLocal] {
-        let commentFetch = FetchDescriptor<CommentDetailResponseLocal>(
-            predicate: #Predicate { $0.rawPost?.id == postId }
+    func getComments(postId: Int) -> [Comment] {
+        let commentFetch = FetchDescriptor<Comment>(
+            predicate: #Predicate { $0.post?.rawId == postId }
         )
         
-        let comments = try? context?.fetch(commentFetch)
+        let comments = try? modelContext.fetch(commentFetch)
         return comments ?? []
     }
     
-    func saveComments(comments: [CommentDetailResponseRemote]) async {
-        let post = comments.first?.rawPost
-        guard let postId = post?.id else { return }
+    func saveComments(comments: [CommentDetailResponse]) -> [Comment] {
+        let post = comments.first?.post
+        guard let postId = post?.id else { return [] }
         
-        let postFetch = FetchDescriptor<PostDetailResponseLocal>(
-            predicate: #Predicate { $0.postId == postId }
+        var postFetch = FetchDescriptor<PostDetail>(
+            predicate: #Predicate { $0.rawId == postId }
         )
         
-        guard let localPost = try? context?.fetch(postFetch).first else { return }
+        postFetch.fetchLimit = 1
         
-        comments.forEach { comment in
-            try? context?.transaction {
-                guard let localComment = CommentDetailResponseLocal(remote: comment) else { return }
-                
-                let creatorId = comment.rawCreator?.id
-                let creatorFetch = FetchDescriptor<CreatorResponseLocal>(
-                    predicate: #Predicate { $0.id != nil && $0.id == creatorId }
-                )
-                var creator = try? context?.fetch(creatorFetch).first
-                
-                if creator == nil {
-                    creator = CreatorResponseLocal(remote: comment.rawCreator)
-                }
-                
-                localComment.rawPost = localPost.rawPost
-                localComment.rawCreator = creator
-                self.context?.insert(object: localComment)
-            }
+        guard let localPost = try? modelContext.fetch(postFetch).first else { return [] }
+        
+        let mappedComments = comments.compactMap { comment -> Comment? in
+            saveComment(post: localPost, comment: comment)
         }
+        
+        return mappedComments
+    }
+    
+    func saveComment(post: PostDetail?, comment: CommentDetailResponse) -> Comment? {
+        guard let commentId = comment.comment?.id, let creatorId = comment.creator?.id else { return nil }
+        
+        // Upsert comment
+        let localComment: Comment
+        if let existingComment = getComment(id: commentId) {
+            localComment = existingComment
+            localComment.update(with: comment)
+        } else if let newComment = Comment(remote: comment, idPrefix: "") {
+            localComment = newComment
+            modelContext.insert(newComment)
+        } else {
+            return nil
+        }
+        
+        var localCreator: Person?
+        var creatorFetch = FetchDescriptor<Person>(
+            predicate: #Predicate { $0.rawId == creatorId }
+        )
+        
+        creatorFetch.fetchLimit = 1
+        if let fetchId = try? modelContext.fetchIdentifiers(creatorFetch).first,
+           let existingCreator = modelContext.model(for: fetchId) as? Person {
+            
+            localCreator = existingCreator
+            localCreator?.update(with: comment.creator)
+        } else if let newCreator = Person(remote: comment.creator, idPrefix: "") {
+            localCreator = newCreator
+            modelContext.insert(newCreator)
+        }
+        
+        if let localPost = post {
+            localComment.post = localPost
+        }
+        localComment.creator = localCreator
+        modelContext.insert(localComment)
+        
+        return localComment
+    }
+    
+    func getComment(id: Int) -> Comment? {
+        // TODO: Handle ID clash across sites
+        var commentFetch = FetchDescriptor<Comment>(
+            predicate: #Predicate { $0.rawId == id }
+        )
+        
+        commentFetch.fetchLimit = 1
+        commentFetch.includePendingChanges = true
+        
+        guard let fetchId = try? modelContext.fetchIdentifiers(commentFetch).first,
+              let comment = modelContext.model(for: fetchId) as? Comment
+        else {
+            return nil
+        }
+        
+        return comment
     }
 }

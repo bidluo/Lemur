@@ -7,7 +7,13 @@
     "%@" : {
 
     },
+    "Bold" : {
+
+    },
     "Comments..." : {
+
+    },
+    "Content" : {
 
     },
     "Lemur" : {
@@ -46,6 +52,12 @@
           }
         }
       }
+    },
+    "Replying to..." : {
+
+    },
+    "Submit" : {
+
     },
     "Top" : {
       "extractionState" : "manual"

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Communities for %@" : {
+
+    },
     "ScreenTItle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11,6 +14,9 @@
           }
         }
       }
+    },
+    "Select site..." : {
+
     }
   },
   "version" : "1.0"

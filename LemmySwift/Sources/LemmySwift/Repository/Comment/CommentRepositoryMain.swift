@@ -1,10 +1,13 @@
 import Foundation
 
 public protocol CommentRepositoryType {
-    func getComments(postId: Int, sort: CommentSort) async -> AsyncThrowingStream<[CommentDetailResponse], Error>
+    func getComments(baseUrl: URL, postId: Int, sort: CommentSort) async -> AsyncThrowingStream<[Comment], Error>
+    func getComment(siteUrl: URL, commentId: Int, localOnly: Bool) async -> AsyncThrowingStream<Comment, Error>
+    func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> Comment
+    func createComment(siteUrl: URL, request: CommentCreateRequest) async throws -> Comment
 }
 
-public actor CommentRepositoryMain: CommentRepositoryType, RepositoryType {
+actor CommentRepositoryMain: CommentRepositoryType, RepositoryType {
     
     private let remote: CommentRepositoryRemote
     private let local: CommentRepositoryLocal
@@ -14,20 +17,53 @@ public actor CommentRepositoryMain: CommentRepositoryType, RepositoryType {
         self.local = local
     }
     
-    public func getComments(postId: Int, sort: CommentSort) async -> AsyncThrowingStream<[CommentDetailResponse], Error> {
+    func getComments(baseUrl: URL, postId: Int, sort: CommentSort) async -> AsyncThrowingStream<[Comment], Error> {
         return fetchFromSources { [weak self] in
             await self?.local.getComments(postId: postId)
         } remoteDataSource: { [weak self] in
-            try await self?.remote.getComments(postId: postId, sort: sort).comments
+            try await self?.remote.getComments(baseUrl: baseUrl, postId: postId,  sort: sort).comments
         } transform: { [weak local] localResponse, remoteResponse in
-            // TODO: Reenable comment saving when comment model is flattened
-            // Causes crash when sorting do to upsert behaviour
+            if let _remoteResponse = remoteResponse {
+                return await local?.saveComments(comments: _remoteResponse)
+            }
             
-//            if let _remoteResponse = remoteResponse {
-//                await local?.saveComments(comments: _remoteResponse)
-//            }
-            
-            return (remoteResponse ?? localResponse) ?? []
+            return localResponse ?? []
         }
+    }
+    
+    func getComment(siteUrl: URL, commentId: Int, localOnly: Bool) async -> AsyncThrowingStream<Comment, Error> {
+        return fetchFromSources { [weak self] in
+            await self?.local.getComment(id: commentId)
+        } remoteDataSource: { [weak self] in
+            guard localOnly == false else { return Optional<CommentDetailResponse>(nil) }
+            return try await self?.remote.getComment(baseUrl: siteUrl, commentId: commentId)
+        } transform: { [weak local] localResponse, remoteResponse in
+            if let _remote = remoteResponse {
+                let mappedComment = await local?.saveComment(post: nil, comment: _remote)
+                return mappedComment
+            }
+            
+            return localResponse
+        }
+    }
+    
+    func voteComment(siteUrl: URL, request: CommentVoteRequest) async throws -> Comment {
+        let response = try await remote.voteComment(siteUrl: siteUrl, request: request)
+        
+        guard let localPost = await local.saveComment(post: nil, comment: response.comment) else {
+            throw NetworkFailure.invalidResponse
+        }
+        
+        return localPost
+    }
+    
+    func createComment(siteUrl: URL, request: CommentCreateRequest) async throws -> Comment {
+        let response = try await remote.createComment(siteUrl: siteUrl, request: request)
+        
+        guard let localPost = await local.saveComment(post: nil, comment: response.comment) else {
+            throw NetworkFailure.invalidResponse
+        }
+        
+        return localPost
     }
 }

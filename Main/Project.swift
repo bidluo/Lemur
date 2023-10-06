@@ -28,7 +28,8 @@ let debugScheme = Scheme(
 var dependencies: [TargetDependency] = [
     .project(target: "Common", path: "../Common"),
     .project(target: "Community", path: "../Community"),
-    .project(target: "Post", path: "../Post")
+    .project(target: "Post", path: "../Post"),
+    .project(target: "Setting", path: "../Setting")
 ]
 
 let infoPlist: [String: InfoPlist.Value] = [

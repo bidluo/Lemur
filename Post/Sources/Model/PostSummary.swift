@@ -1,46 +1,54 @@
 import Foundation
 import LemmySwift
 
-struct PostSummary {
-
+struct PostSummary: Hashable {
     let id: Int
     let title: String
     let thumbnail: URL?
     let body: String?
-    let creatorId: Int?
+    var creatorId: Int?
     let creatorName: String?
     let creatorThumbnail: URL?
-    let communityId: Int?
+    var communityId: Int?
     let communityName: String?
     let communityThumbnail: URL?
     let score: String
+    let commentCount: Int
+    let siteUrl: URL
+    let myVote: Int
     
     enum Failure: LocalizedError {
         case invalidCreatorId
         case invalidCommunityId
         case invalidPost
+        case invalidSite
     }
     
-    init(post: PostDetailResponse?) throws {
-        guard let postContent = post?.post, let id = postContent.id else { throw Failure.invalidPost }
+    init(post: PostDetail?) throws {
+        guard let _post = post else { throw Failure.invalidPost }
+        guard let _site = post?.site else { throw Failure.invalidSite }
         
-        let creator = post?.creator
-        let community = post?.community
         
-        self.id = id
-        self.title = postContent.name ?? ""
+        let creator = _post.creator
+        let community = _post.community
+        
+        self.id = _post.rawId
+        self.title = _post.name ?? ""
         
         // TODO: Post might not have thumbnail, but could be URL (as in the case of imgur links).
         // Would have to check if link is a picture or not
-        self.thumbnail = postContent.thumbnailURL
-        self.body = postContent.body
-        self.creatorId = creator?.id
+        self.thumbnail = _post.thumbnailURL
+        self.body = _post.body
+        self.creatorId = creator?.rawId
         self.creatorName = creator?.name
         self.creatorThumbnail = creator?.avatar
-        self.communityId = community?.id
+        self.communityId = community?.rawId
         self.communityName = community?.name
         self.communityThumbnail = community?.icon
-        self.score = post?.counts?.score?.formatted() ?? ""
+        self.score = post?.score?.formatted() ?? ""
+        self.commentCount = post?.commentsCount ?? 0
+        self.siteUrl = _site.url
+        self.myVote = post?.myVote ?? 0
     }
     
     init(
@@ -54,7 +62,9 @@ struct PostSummary {
         communityId: Int,
         communityName: String,
         communityThumbnail: URL? = nil,
-        score: String
+        score: String,
+        commentCount: Int? = nil,
+        siteUrl: URL
     ) {
         self.id = id
         self.title = title
@@ -67,5 +77,8 @@ struct PostSummary {
         self.communityName = communityName
         self.communityThumbnail = communityThumbnail
         self.score = score
+        self.commentCount = commentCount ?? 0
+        self.siteUrl = siteUrl
+        self.myVote = 0
     }
 }

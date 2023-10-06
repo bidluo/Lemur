@@ -1,6 +1,6 @@
 import Foundation
 
-public enum PostSort: String {
+public enum PostSort: String, Equatable {
     case hot = "Hot"
     case active = "Active"
     case old = "Old"

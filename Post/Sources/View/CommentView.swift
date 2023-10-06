@@ -4,8 +4,25 @@ import Common
 
 struct CommentView: View {
     
-    let comment: CommentContent
+    @State var comment: CommentContent
+//    @Binding var composePresentedForComment: Int?
+    let siteUrl: URL
     let nestLevel: Int
+    
+    var replyTapped: ((CommentContent) -> Void)?
+    
+    @State private var errorHandling = ErrorHandling()
+    @UseCase private var voteUseCase: CommentVoteUseCase
+    
+    private var myScore: Int { return comment.myScore ?? 0 }
+    
+    private var scoreColour: Color {
+        switch comment.myScore {
+        case 1: return .orange
+        case -1: return .blue
+        default: return .gray
+        }
+    }
     
     var body: some View {
         HStack(spacing: .zero) {
@@ -41,15 +58,61 @@ struct CommentView: View {
                     if let score = comment.score {
                         Group {
                             Text("\(score)")
+                            
                             Image(systemName: "arrow.up.arrow.down")
                         }
                         .font(.footnote)
                         .fontDesign(.monospaced)
+                        .foregroundStyle(scoreColour)
                     }
                 }
                 
             }.padding(.smallMedium)
         }
+        .swipeActions(edge: .leading, allowsFullSwipe: true, content: {
+            Button(action: {
+                vote(type: .up)
+            }, label: {
+                Image(systemName: myScore > 0 ? "arrow.uturn.up" : "arrow.up")
+            })
+            .tint(Color.orange)
+        })
+        .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
+            Button(action: {
+//                composePresentedForComment = comment.id
+                replyTapped?(comment)
+            }, label: {
+                Image(systemName: "arrowshape.turn.up.left.fill")
+            })
+            .tint(Color.green)
+            
+            Button(action: {
+                vote(type: .down)
+            }, label: {
+                Image(systemName: myScore < 0 ? "arrow.uturn.down" : "arrow.down")
+            })
+            .tint(Color.blue)
+        })
+
+    }
+    
+    private func vote(type: VoteType) {
+        executing(
+            action: {
+                let result = try await voteUseCase.call(input: .init(siteUrl: siteUrl, commentId: comment.id, voteType: type))
+                self.comment.score = result.score
+                self.comment.myScore = result.myVote
+            },
+            errorHandler: errorHandling
+        )
+    }
+}
+
+extension CommentView {
+    func replyTapped(_ handler: @escaping (CommentContent) -> Void) -> CommentView {
+        var new = self
+        new.replyTapped = handler
+        return new
     }
 }
 
