@@ -1,11 +1,13 @@
 import Foundation
 import SwiftUI
+import Common
 
 struct PostPreviewImageView: View {
     var imageUrl: URL?
+    var isPreview: Bool = true
     
     var body: some View {
-        AsyncImageCache(url: imageUrl)
+        AsyncImageCache(url: imageUrl, clipped: isPreview)
     }
 }
 
@@ -24,42 +26,43 @@ actor ImageCache {
 
 struct AsyncImageCache: View {
     @Environment(\.imageCache) var cache: ImageCache
+    @Environment(\.dismiss) var dismiss
     let url: URL?
+    let clipped: Bool
     @State var image: Image?
     
-    init(url: URL?) {
+    init(url: URL?, clipped: Bool) {
         self.url = url
+        self.clipped = clipped
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            Group {
-                if let _image = self.image {
-                    // Helps keep image from drawing out of bounds and also making
-                    // the parent grow to try fit, despite clipped being used
-                    Color.clear
-                        .overlay {
-                            _image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        }
-                        .clipped()
-                } else {
-                    Color.gray
-                }
-            }.onAppear {
+        Group {
+            if let _image = self.image {
+                _image
+                    .resizable()
+                    .if(clipped == false) { view in
+                        view.modifier(
+                            InteractiveImageModifier(onDismiss: {
+                                dismiss()
+                            })
+                        )
+                    }
+            } else {
+                Color.gray
+            }
+        }.onAppear {
+            Task {
+                await loadImage(thumbnailSize: 720)
+            }
+        }
+        .onChange(of: url, { old, new in
+            if old == nil, new != nil {
                 Task {
-                    await loadImage(thumbnailSize: proxy.size.width)
+                    await loadImage(thumbnailSize: 720)
                 }
             }
-            .onChange(of: url, { old, new in
-                if old == nil, new != nil {
-                    Task {
-                        await loadImage(thumbnailSize: proxy.size.width)
-                    }
-                }
-            })
-        }
+        })
     }
     
     private func loadImage(thumbnailSize: CGFloat) async {

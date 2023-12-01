@@ -6,7 +6,8 @@ public struct SiteOverviewResponse: Decodable {
     public let version: String?
     public let allLanguages: [AllLanguageResponse]?
     public let discussionLanguages: [Int]?
-    public let taglines, customEmojis: [String]?
+    public let customEmojis: [String]?
+//    public let taglines: --Unknown
     
     enum CodingKeys: String, CodingKey {
         case siteView = "site_view"
@@ -14,7 +15,7 @@ public struct SiteOverviewResponse: Decodable {
 //        case admins
         case allLanguages = "all_languages"
         case discussionLanguages = "discussion_languages"
-        case taglines
+//        case taglines
         case customEmojis = "custom_emojis"
     }
 }

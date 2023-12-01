@@ -7,8 +7,15 @@ struct PostView: View {
     @State var post: PostSummary
     var fullView: Bool
     
+    @State private var activeOverlay: Overlay?
     @State private var errorHandling = ErrorHandling()
     @UseCase private var voteUseCase: PostVoteUseCase
+    
+    private enum Overlay: Identifiable {
+        case lightbox
+        
+        var id: Int { return hashValue }
+    }
     
     private var scoreColour: Color {
         switch post.myVote {
@@ -33,7 +40,13 @@ struct PostView: View {
             Group {
                 if let _thumbnail = post.thumbnail {
                     PostPreviewImageView(imageUrl: _thumbnail)
-                        .frame(height: 250)
+                        .aspectRatio(contentMode: .fill)
+                        .frame(minHeight: 200, maxHeight: 400)
+                        .clipped()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            activeOverlay = .lightbox
+                        }
                 }
                 
                 if let _body = post.body, _body.isEmpty == false {
@@ -96,6 +109,22 @@ struct PostView: View {
                 Image(systemName: post.myVote < 1 ? "arrow.uturn.down" : "arrow.down")
             })
             .tint(Color.blue)
+        })
+        .fullScreenCover(item: $activeOverlay, content: { overlay in
+            switch overlay {
+            case .lightbox:
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                        .onTapGesture {
+                            activeOverlay = nil
+                        }
+                    if let _thumbnail = post.thumbnail {
+                        PostPreviewImageView(imageUrl: _thumbnail, isPreview: false)
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
+                
+            }
         })
     }
 }

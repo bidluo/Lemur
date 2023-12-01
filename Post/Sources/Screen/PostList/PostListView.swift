@@ -15,6 +15,7 @@ public struct PostListView: View {
             ForEach(store.rows, id: \.self) { item in
                 NavigationLinkWithoutChevron(value: item, label: {
                     PostView(post: item, fullView: false)
+                        .listRowBackground(Colour.secondaryBackground.swiftUIColor)
                 })
                 .listRowInsets(EdgeInsets([.vertical], size: .small))
                 .listRowSeparator(.hidden, edges: .all)
@@ -25,6 +26,8 @@ public struct PostListView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Colour.primaryBackground.swiftUIColor)
         .listRowSpacing(Size.smallMedium.rawValue)
         .listSectionSpacing(.compact)
         .toolbar {
@@ -71,7 +74,7 @@ public struct PostListView: View {
             })
         }
         .transition(.opacity)
-        .navigationTitle(Text("Lemur"))
+        .navigationTitle(Text("Home"))
         .listStyle(.grouped)
         .navigationDestination(for: PostSummary.self, destination: { post in
             PostDetailView(siteUrl: post.siteUrl, id: post.id)
