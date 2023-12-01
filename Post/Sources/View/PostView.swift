@@ -64,11 +64,12 @@ struct PostView: View {
                 
                 Spacer()
                 
-                Text("\(post.commentCount)")
+                Text("\(Image(systemName: "bubble.left.and.bubble.right.fill")) \(post.commentCount)")
                     .font(.footnote)
                     .fontDesign(.monospaced)
+                    .foregroundStyle(.gray)
                 
-                Text(post.score)
+                Text("\(Image(systemName: "arrow.up.arrow.down")) \(post.score)")
                     .font(.footnote)
                     .fontDesign(.monospaced)
                     .foregroundStyle(scoreColour)
