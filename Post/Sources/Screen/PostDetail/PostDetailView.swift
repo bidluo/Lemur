@@ -23,59 +23,61 @@ struct PostDetailView: View {
     }
     
     var body: some View {
-        List {
-            if let _post = store.post {
-                SectionWithoutHeader {
-                    PostView(post: _post, fullView: true)
-                        .listRowInsets(EdgeInsets(.all, size: .zero))
-                        .listRowSeparator(.hidden, edges: .all)
+        GeometryReader { proxy in
+            List {
+                if let _post = store.post {
+                    SectionWithoutHeader {
+                        PostView(post: _post, fullView: true, width: proxy.size.width)
+                            .listRowInsets(EdgeInsets(.all, size: .zero))
+                            .listRowSeparator(.hidden, edges: .all)
+                    }
                 }
+                
+                NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
+                    CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
+                        .replyTapped { comment in
+                            presentedSheet = .composeComment(comment)
+                        }
+                }
+                .disclosureGroupStyle(.arrowLess)
+                .listRowInsets(EdgeInsets(.all, size: .zero))
             }
-            
-            NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
-                CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
-                    .replyTapped { comment in
-                        presentedSheet = .composeComment(comment)
-                    }
-            }
-            .disclosureGroupStyle(.arrowLess)
-            .listRowInsets(EdgeInsets(.all, size: .zero))
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .listSectionSpacing(.compact)
-        .listStyle(.grouped)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing, content: {
-                Menu(content: {
-                    ForEach(store.sortItems, id: \.self) { item in
-                        Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
-                    }
-                }, label: {
-                    switch store.selectedSort {
-                    case .hot: Image(systemName: "flame.fill")
-                    case .top: Image(systemName: "crown.fill")
-                    case .new: Image(systemName: "hourglass.tophalf.filled")
-                    case .old: Image(systemName: "hourglass.bottomhalf.filled")
-                    }
+            .navigationBarTitleDisplayMode(.inline)
+            .listSectionSpacing(.compact)
+            .listStyle(.grouped)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing, content: {
+                    Menu(content: {
+                        ForEach(store.sortItems, id: \.self) { item in
+                            Button(action: { store.selectedSort = item }, label: { Text(item.rawValue) })
+                        }
+                    }, label: {
+                        switch store.selectedSort {
+                        case .hot: Image(systemName: "flame.fill")
+                        case .top: Image(systemName: "crown.fill")
+                        case .new: Image(systemName: "hourglass.tophalf.filled")
+                        case .old: Image(systemName: "hourglass.bottomhalf.filled")
+                        }
+                    })
                 })
+            }
+            .withErrorHandling(errorHandling: errorHandler)
+            .task(id: store.selectedSort, {
+                await executingTask(action: store.loadComments, errorHandler: errorHandler)
+            })
+            .task {
+                await executingTask(action: store.load, errorHandler: errorHandler)
+            }
+            .sheet(item: $presentedSheet, content: { sheet in
+                switch sheet {
+                case let .composeComment(comment):
+                    CommentComposeView(siteUrl: store.siteUrl, postId: id, parentId: comment.id)
+                        .onDisappear {
+                            // TODO: Load locally instead of remote
+                            executing(action: store.loadComments, errorHandler: errorHandler)
+                        }
+                }
             })
         }
-        .withErrorHandling(errorHandling: errorHandler)
-        .task(id: store.selectedSort, {
-            await executingTask(action: store.loadComments, errorHandler: errorHandler)
-        })
-        .task {
-            await executingTask(action: store.load, errorHandler: errorHandler)
-        }
-        .sheet(item: $presentedSheet, content: { sheet in
-            switch sheet {
-            case let .composeComment(comment):
-                CommentComposeView(siteUrl: store.siteUrl, postId: id, parentId: comment.id)
-                    .onDisappear {
-                        // TODO: Load locally instead of remote
-                        executing(action: store.loadComments, errorHandler: errorHandler)
-                    }
-            }
-        })
     }
 }

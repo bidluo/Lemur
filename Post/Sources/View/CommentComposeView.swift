@@ -37,7 +37,7 @@ struct CommentComposeView: View {
                     Button(action: {
                         if isSubmitting == false {
                             executing(action: {
-                                try await createUseCase.call(
+                                let _ = try await createUseCase.call(
                                     input: .init(
                                         siteUrl: siteUrl,
                                         content: commentText,

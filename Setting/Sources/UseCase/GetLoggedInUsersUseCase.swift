@@ -26,7 +26,7 @@ class GetLoggedInUsersUseCase: UseCaseType {
     
     @MainActor
     func call(input: Input) async throws -> Result {
-        var loggedInUsers = userDefaults.stringArray(forKey: SignInUseCase.LOGGED_IN_USERS) ?? []
+        let loggedInUsers = userDefaults.stringArray(forKey: SignInUseCase.LOGGED_IN_USERS) ?? []
         let users = try await userRepository.getPeople(withIds: loggedInUsers).map { user in
             return Result.LoggedInUser(id: user.id, name: user.name, siteName: user.site?.name)
         }

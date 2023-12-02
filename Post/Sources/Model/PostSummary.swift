@@ -6,6 +6,7 @@ struct PostSummary: Hashable {
     let title: String
     let thumbnail: URL?
     let body: String?
+    let url: URL?
     var creatorId: Int?
     let creatorName: String?
     let creatorThumbnail: URL?
@@ -37,6 +38,7 @@ struct PostSummary: Hashable {
         
         // TODO: Post might not have thumbnail, but could be URL (as in the case of imgur links).
         // Would have to check if link is a picture or not
+        self.url = _post.url
         self.thumbnail = _post.thumbnailURL
         self.body = _post.body
         self.creatorId = creator?.rawId
@@ -56,6 +58,7 @@ struct PostSummary: Hashable {
         title: String,
         thumbnail: URL? = nil,
         body: String? = nil,
+        url: URL? = nil,
         creatorId: Int,
         creatorName: String,
         creatorThumbnail: URL? = nil,
@@ -70,6 +73,7 @@ struct PostSummary: Hashable {
         self.title = title
         self.thumbnail = thumbnail
         self.body = body
+        self.url = url
         self.creatorId = creatorId
         self.creatorName = creatorName
         self.creatorThumbnail = creatorThumbnail

@@ -6,10 +6,13 @@ struct PostView: View {
     
     @State var post: PostSummary
     var fullView: Bool
+    var width: CGFloat
     
     @State private var activeOverlay: Overlay?
     @State private var errorHandling = ErrorHandling()
     @UseCase private var voteUseCase: PostVoteUseCase
+    
+    @Environment(\.openURL) var openURL
     
     private enum Overlay: Identifiable {
         case lightbox
@@ -39,14 +42,34 @@ struct PostView: View {
             
             Group {
                 if let _thumbnail = post.thumbnail {
-                    PostPreviewImageView(imageUrl: _thumbnail)
-                        .aspectRatio(contentMode: .fill)
-                        .frame(minHeight: 200, maxHeight: 400)
-                        .clipped()
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            activeOverlay = .lightbox
+                    ZStack(alignment: .bottomTrailing) {
+                        PostPreviewImageView(url: _thumbnail, isPreview: true)
+                            .aspectRatio(contentMode: .fill)
+                            .frame(minHeight: 200, maxHeight: 400)
+                            .clipped()
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                activeOverlay = .lightbox
+                            }
+                        
+                        if let url = post.url, let host = url.host() {
+                            Button(action: {
+                                    openURL(url)
+                            }, label: {
+                                HStack {
+                                    Image(systemName: "link.circle")
+                                    Text(host)
+                                        .font(.footnote)
+                                }
+                                .padding(.small)
+                            })
+                            .buttonStyle(.plain)
+                            .background(Capsule().fill(Material.ultraThin))
+                            .padding(.medium)
                         }
+                    }
+                    .frame(width: width)
+                    .aspectRatio(contentMode: .fit)
                 }
                 
                 if let _body = post.body, _body.isEmpty == false {
@@ -120,7 +143,7 @@ struct PostView: View {
                             activeOverlay = nil
                         }
                     if let _thumbnail = post.thumbnail {
-                        PostPreviewImageView(imageUrl: _thumbnail, isPreview: false)
+                        PostPreviewImageView(url: _thumbnail, isPreview: false)
                             .aspectRatio(contentMode: .fit)
                     }
                 }
@@ -144,6 +167,7 @@ struct PostView: View {
             score: "0",
             siteUrl: URL(string: "")!
         ),
-        fullView: true
+        fullView: true, 
+        width: .greatestFiniteMagnitude
     )
 }
