@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Common
+import MarkdownUI
 
 struct PostView: View {
     
@@ -165,7 +166,7 @@ struct PostView: View {
             communityId: 0,
             communityName: "CatsCommunity",
             score: "0",
-            siteUrl: URL(string: "")!
+            siteUrl: .temporaryDirectory
         ),
         fullView: true, 
         width: .greatestFiniteMagnitude

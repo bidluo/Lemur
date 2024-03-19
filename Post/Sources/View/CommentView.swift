@@ -1,13 +1,14 @@
 import Foundation
 import SwiftUI
 import Common
+import MarkdownUI
 
 struct CommentView: View {
     
     @State var comment: CommentContent
-//    @Binding var composePresentedForComment: Int?
     let siteUrl: URL
     let nestLevel: Int
+    var scrollsContent: Bool = false
     
     var replyTapped: ((CommentContent) -> Void)?
     
@@ -50,7 +51,13 @@ struct CommentView: View {
                     }
                 }
                 
-                MarkdownTextView(text: comment.content)
+                if scrollsContent {
+                    ScrollView {
+                        Markdown(comment.content)
+                    }
+                } else {
+                    Markdown(comment.content)
+                }
                 
                 HStack(spacing: Size.small.rawValue) {
                     Spacer()
@@ -79,7 +86,6 @@ struct CommentView: View {
         })
         .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
             Button(action: {
-//                composePresentedForComment = comment.id
                 replyTapped?(comment)
             }, label: {
                 Image(systemName: "arrowshape.turn.up.left.fill")

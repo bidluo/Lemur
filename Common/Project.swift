@@ -11,12 +11,12 @@ let project = Project(
         .debug(name: "Debug")
     ]),
     targets: [
-        Target(
+        Target.target(
             name: "Common",
-            platform: .iOS,
+            destinations: .iOS,
             product: .framework,
-            bundleId: "me.liaw.LemurCommon",
-            deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
+            bundleId: "io.ringtale.LemurCommon",
+            deploymentTargets: .iOS("17.0"),
             sources: "Sources/Common/**",
             resources: "Resources/**",
             dependencies: dependencies

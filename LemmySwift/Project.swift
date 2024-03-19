@@ -6,12 +6,12 @@ let project = Project(
         .debug(name: "Debug")
     ]),
     targets: [
-        Target(
+        Target.target(
             name: "LemmySwift",
-            platform: .iOS,
+            destinations: .iOS,
             product: .framework,
-            bundleId: "me.liaw.LemmySwift",
-            deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
+            bundleId: "io.ringtale.LemmySwift",
+            deploymentTargets: .iOS("17.0"),
             sources: "Sources/LemmySwift/**"
         )
     ]

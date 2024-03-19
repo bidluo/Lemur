@@ -18,7 +18,6 @@ class SignInUseCase: UseCaseType {
     
     typealias Result = Void
     
-    static let LOGGED_IN_USERS = "logged_in_users"
     
     enum Failure: LocalizedError {
         case invalidToken
@@ -36,7 +35,7 @@ class SignInUseCase: UseCaseType {
         guard let url = input.baseUrl else { throw Failure.invalidUrl }
         let request = SignInRequest(username: username, password: password)
         let result = try await repository.signIn(baseUrl: url , request: request)
-        var loggedInUsers = Set(userDefaults.stringArray(forKey: Self.LOGGED_IN_USERS) ?? [])
+        var loggedInUsers = Set(userDefaults.stringArray(forKey: GetLoggedInUsersUseCase.LOGGED_IN_USERS) ?? [])
         
         for try await user in await userRepository.getPerson(siteUrl: url, username: username) {
             loggedInUsers.insert(user.id)
@@ -44,7 +43,7 @@ class SignInUseCase: UseCaseType {
         
         guard let token = result.token else { throw Failure.invalidToken }
         
-        userDefaults.setValue([String](loggedInUsers), forKey: Self.LOGGED_IN_USERS)
+        userDefaults.setValue([String](loggedInUsers), forKey: GetLoggedInUsersUseCase.LOGGED_IN_USERS)
         try keychain.save(token: token, for: url, username: username)
         try keychain.save(token: token, for: url, username: "active")
     }

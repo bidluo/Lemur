@@ -13,7 +13,7 @@ let configurations = [
 ]
 
 // MARK: Schemes
-let debugScheme = Scheme(
+let debugScheme = Scheme.scheme(
     name: "\(targetName)-Debug",
     shared: true,
     buildAction: .buildAction(targets: [TargetReference(stringLiteral: targetName)]),
@@ -29,30 +29,30 @@ var dependencies: [TargetDependency] = [
     .project(target: "Common", path: "../Common")
 ]
 
-let infoPlist: [String: InfoPlist.Value] = [
+let infoPlist: InfoPlist = .extendingDefault(with: [
     "CFBundleShortVersionString": "$(APP_VERSION)",
     "CFBundleVersion": "$(BUILD_NUMBER)",
     "CFBundleDisplayName": "$(APP_DISPLAY_NAME)",
     "ITSAppUsesNonExemptEncryption": false
-]
+])
 
-let appTarget = Target(
+let appTarget = Target.target(
     name: "\(targetName)-App",
-    platform: .iOS,
+    destinations: .iOS,
     product: .app,
     bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-    deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
-    infoPlist: .extendingDefault(with: infoPlist),
+    deploymentTargets: .iOS("17.0"),
+    infoPlist: infoPlist,
     sources: ["AppSources/**"],
     dependencies: dependencies + [.target(name: targetName)]
 )
 
-let mainTarget = Target(
+let mainTarget = Target.target(
     name: targetName,
-    platform: .iOS,
+    destinations: .iOS,
     product: .framework,
     bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-    deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
+    deploymentTargets: .iOS("17.0"),
     sources: "Sources/**",
     resources: ["Resources/**"],
     dependencies: dependencies
@@ -60,7 +60,7 @@ let mainTarget = Target(
 
 let project = Project(
     name: targetName,
-    organizationName: "liaw.me",
+    organizationName: "ringtale.io",
     settings: Settings.settings(configurations: configurations),
     targets: [mainTarget, appTarget],
     schemes: [

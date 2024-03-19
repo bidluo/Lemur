@@ -50,16 +50,16 @@ struct MainView: View {
                 Text("Home")
             }
             
-            provider.settingsProvider?.mainSettingsView()
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Settings")
-                }
-            
             provider.communityProvider?.listView()
                 .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("house.fill")
+                    Image(systemName: "square.grid.3x2.fill")
+                    Text("Communities")
+                }
+            
+            provider.settingsProvider?.mainSettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape.fill")
+                    Text("Settings")
                 }
         }
         .accentColor(Colour.brandPrimary.swiftUIColor)

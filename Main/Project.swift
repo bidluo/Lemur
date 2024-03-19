@@ -13,7 +13,7 @@ let configurations = [
 ]
 
 // MARK: Schemes
-let debugScheme = Scheme(
+let debugScheme = Scheme.scheme(
     name: "\(targetName)-Debug",
     shared: true,
     buildAction: .buildAction(targets: [TargetReference(stringLiteral: targetName)]),
@@ -32,21 +32,21 @@ var dependencies: [TargetDependency] = [
     .project(target: "Setting", path: "../Setting")
 ]
 
-let infoPlist: [String: InfoPlist.Value] = [
+let infoPlist: InfoPlist = .extendingDefault(with: [
     "CFBundleShortVersionString": "$(APP_VERSION)",
     "CFBundleVersion": "$(BUILD_NUMBER)",
     "CFBundleDisplayName": "$(APP_DISPLAY_NAME)",
     "ITSAppUsesNonExemptEncryption": false,
     "UILaunchScreen": [:]
-]
+])
 
-let mainTarget = Target(
+let mainTarget = Target.target(
     name: targetName,
-    platform: .iOS,
+    destinations: .iOS,
     product: .app,
     bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-    deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone, .ipad]),
-    infoPlist: .extendingDefault(with: infoPlist),
+    deploymentTargets: .iOS("17.0"),
+    infoPlist: infoPlist,
     sources: ["Sources/**"],
     resources: ["Resources/**"],
     dependencies: dependencies
@@ -54,8 +54,15 @@ let mainTarget = Target(
 
 let project = Project(
     name: targetName,
-    organizationName: "liaw.me",
-    settings: Settings.settings(configurations: configurations),
+    organizationName: "ringtale.io",
+    settings: .settings(base: [
+        "CODE_SIGN_STYLE": "Manual",
+        "PROVISIONING_PROFILE_SPECIFIER": "$(PROVISIONING_PROFILE_SPECIFIER)",
+        "CODE_SIGN_IDENTITY": "$(CODE_SIGN_IDENTITY)",
+//        "DEVELOPMENT_TEAM": "$(DEVELOPMENT_TEAM)",
+        "OTHER_CODE_SIGN_FLAGS": "$(inherited) --keychain=$(SRCROOT)/../Derived/signing.keychain"
+
+    ], configurations: configurations, defaultSettings: .recommended),
     targets: [mainTarget],
     schemes: [
         debugScheme

@@ -3,16 +3,15 @@ import SwiftUI
 import Common
 
 struct PostDetailView: View {
-    
     @State private var store: PostDetailStore
     @State private var errorHandler = ErrorHandling()
     @State private var composePresentedForComment: Int?
     @State private var presentedSheet: PresentedSheet?
+    @State private var presentationDetent: PresentationDetent = .fraction(0.8)
     private let id: Int
     
     private enum PresentedSheet: Identifiable, Hashable {
-        case composeComment(CommentContent)
-        
+        case composeComment(CommentContent, Int)
         
         var id: Int { return hashValue }
     }
@@ -36,7 +35,7 @@ struct PostDetailView: View {
                 NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
                     CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
                         .replyTapped { comment in
-                            presentedSheet = .composeComment(comment)
+                            presentedSheet = .composeComment(comment, nestLevel)
                         }
                 }
                 .disclosureGroupStyle(.arrowLess)
@@ -70,8 +69,15 @@ struct PostDetailView: View {
             }
             .sheet(item: $presentedSheet, content: { sheet in
                 switch sheet {
-                case let .composeComment(comment):
-                    CommentComposeView(siteUrl: store.siteUrl, postId: id, parentId: comment.id)
+                case let .composeComment(comment, nestLevel):
+                    CommentComposeView(siteUrl: store.siteUrl, postId: id, parentComment: comment, nestLevel: nestLevel)
+                        .presentationDetents([.fraction(0.3), .fraction(0.8), .large], selection: $presentationDetent)
+                        .presentationBackgroundInteraction(
+                            .enabled(upThrough: .fraction(0.3))
+                        )
+                        .onAppear {
+                            presentationDetent = .fraction(0.6)
+                        }
                         .onDisappear {
                             // TODO: Load locally instead of remote
                             executing(action: store.loadComments, errorHandler: errorHandler)
