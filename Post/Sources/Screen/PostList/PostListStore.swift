@@ -17,23 +17,9 @@ class PostListStore {
     private var communityId: Int?
     private var needsLoad = true
     
-    public var mainItems: [GetPostListUseCase.Sort] { return [.hot, .active, .old, .new] }
-    public var commentItems: [GetPostListUseCase.Sort] { return [.mostComments, .newComments] }
-    public var topItems: [GetPostListUseCase.Sort] {
-        return [
-            .topHour,
-            .topSixHour,
-            .topTwelveHour,
-            .topDay,
-            .topWeek,
-            .topMonth,
-            .topThreeMonths,
-            .topSixMonths,
-            .topNineMonths,
-            .topYear,
-            .topAll
-        ]
-    }
+    public let mainItems = GetPostListUseCase.Sort.mainItems
+    public let commentItems = GetPostListUseCase.Sort.commentItems
+    public let topItems = GetPostListUseCase.Sort.topItems
     
     init(siteUrl: URL? = nil, communityId: Int? = nil) {
         self.siteUrl = siteUrl

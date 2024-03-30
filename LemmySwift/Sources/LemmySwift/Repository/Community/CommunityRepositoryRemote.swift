@@ -9,8 +9,8 @@ class CommunityRepositoryRemote: NetworkType {
         self.asyncActor = AsyncDataTaskActor(keychain: keychain)
     }
     
-    func getCommunities(baseUrl: URL) async throws -> CommunityListResponse {
-        return try await perform(baseUrl: baseUrl, http: CommunitySpec.communities)
+    func getCommunities(baseUrl: URL, sort: PostSort) async throws -> CommunityListResponse {
+        return try await perform(baseUrl: baseUrl, http: CommunitySpec.communities(sort))
     }
     
     func getSubscribedCommunities(baseUrl: URL) async throws -> CommunityListResponse {

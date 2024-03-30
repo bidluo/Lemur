@@ -1,7 +1,7 @@
 import Foundation
 
 enum CommunitySpec: Spec {
-    case communities
+    case communities(PostSort)
     case subscribedCommunities
     
     var method: HTTPMethod {
@@ -19,7 +19,10 @@ enum CommunitySpec: Spec {
     
     var query: [URLQueryItem] {
         switch self {
-        case .communities: [URLQueryItem(name: "limit", value: "50")]
+        case .communities(let sort): [
+            URLQueryItem(name: "limit", value: "50"),
+            URLQueryItem(name: "sort", value: sort.rawValue)
+        ]
         case .subscribedCommunities: [URLQueryItem(name: "type", value: "Subscribed")]
         default: []
         }

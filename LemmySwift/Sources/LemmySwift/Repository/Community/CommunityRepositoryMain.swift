@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol CommunityRepositoryType {
-    func getCommunities(siteUrl: URL) async throws -> [Community]
+    func getCommunities(siteUrl: URL, sort: PostSort) async throws -> [Community]
     func getSubscribedCommunities() async -> AsyncThrowingStream<SourcedResult<[Site: [Community]]>, Error>
 }
 
@@ -17,8 +17,8 @@ public class CommunityRepositoryMain: CommunityRepositoryType, RepositoryType {
         self.siteRepository = siteRepository
     }
     
-    public func getCommunities(siteUrl: URL) async throws -> [Community] {
-        let communityList = try? await self.remote.getCommunities(baseUrl: siteUrl).communities
+    public func getCommunities(siteUrl: URL, sort: PostSort) async throws -> [Community] {
+        let communityList = try? await self.remote.getCommunities(baseUrl: siteUrl, sort: sort).communities
         let mappedPosts = await self.local.mapCommunities(siteUrl: siteUrl, communities: communityList ?? [], saveLocally: false)
         return mappedPosts
     }

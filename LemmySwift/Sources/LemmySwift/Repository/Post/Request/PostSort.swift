@@ -5,6 +5,7 @@ public enum PostSort: String, Equatable {
     case active = "Active"
     case old = "Old"
     case new = "New"
+    case scaled = "Scaled"
     
     case mostComments = "MostComments"
     case newComments = "NewComments"
@@ -20,4 +21,24 @@ public enum PostSort: String, Equatable {
     case topNineMonths = "TopNineMonths"
     case topYear = "TopYear"
     case topAll = "TopAll"
+}
+
+extension PostSort {
+    public static var mainItems: [Self] { return [.hot, .active, .old, .new, .scaled] }
+    public static var commentItems: [Self] { return [.mostComments, .newComments] }
+    public static var topItems: [Self] {
+        return [
+            .topHour,
+            .topSixHour,
+            .topTwelveHour,
+            .topDay,
+            .topWeek,
+            .topMonth,
+            .topThreeMonths,
+            .topSixMonths,
+            .topNineMonths,
+            .topYear,
+            .topAll
+        ]
+    }
 }

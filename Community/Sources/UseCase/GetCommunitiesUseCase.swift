@@ -8,7 +8,10 @@ class GetCommunitiesUseCase: UseCaseType {
     
     struct Input {
         let siteUrl: URL
+        let sort: Sort
     }
+    
+    typealias Sort = LemmySwift.PostSort
     
     struct Result {
         let communities: [Community]
@@ -29,7 +32,7 @@ class GetCommunitiesUseCase: UseCaseType {
     }
     
     func call(input: Input) async throws -> Result {
-        let communities = try await repository.getCommunities(siteUrl: input.siteUrl).map { item in
+        let communities = try await repository.getCommunities(siteUrl: input.siteUrl, sort: input.sort).map { item in
             return Result.Community(
                 id: item.rawId,
                 name: item.title ?? "",
