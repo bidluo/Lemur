@@ -92,7 +92,11 @@ extension NetworkType {
             if data.isEmpty, let emptyJson = "{}".data(using: .utf8) {
                 return try jsonDecoder.decode(T.self, from: emptyJson)
             } else {
+#if DEBUG
+                return try! jsonDecoder.decode(T.self, from: data)
+#else
                 return try jsonDecoder.decode(T.self, from: data)
+#endif
             }
         } else if response.isUnauthorisedResponse() {
             throw NetworkFailure.unauthorised

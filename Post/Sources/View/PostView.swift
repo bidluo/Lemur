@@ -14,6 +14,7 @@ struct PostView: View {
     @UseCase private var voteUseCase: PostVoteUseCase
     
     @Environment(\.openURL) var openURL
+    @Environment(\.authenticated) var authenticated
     
     private enum Overlay: Identifiable {
         case lightbox
@@ -74,9 +75,14 @@ struct PostView: View {
                 }
                 
                 if let _body = post.body, _body.isEmpty == false {
-                    MarkdownTextView(text: _body)
-                        .lineLimit(fullView ? nil : 3)
-                        .padding(.horizontal, .medium)
+                    if fullView {
+                        Markdown(_body)
+                            .padding(.horizontal, .medium)
+                    } else {
+                        MarkdownTextView(text: _body)
+                            .lineLimit(fullView ? nil : 3)
+                            .padding(.horizontal, .medium)
+                    }
                 }
             }
             .padding(.bottom, .small)
@@ -120,20 +126,24 @@ struct PostView: View {
             }
         }
         .swipeActions(edge: .leading, allowsFullSwipe: true, content: {
-            Button(action: {
-                executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .up)) }, errorHandler: errorHandling)
-            }, label: {
-                Image(systemName: post.myVote > 0 ? "arrow.uturn.up" : "arrow.up")
-            })
-            .tint(Color.orange)
+            if authenticated {
+                Button(action: {
+                    executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .up)) }, errorHandler: errorHandling)
+                }, label: {
+                    Image(systemName: post.myVote > 0 ? "arrow.uturn.up" : "arrow.up")
+                })
+                .tint(Color.orange)
+            }
         })
         .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
-            Button(action: {
-                executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .down)) }, errorHandler: errorHandling)
-            }, label: {
-                Image(systemName: post.myVote < 1 ? "arrow.uturn.down" : "arrow.down")
-            })
-            .tint(Color.blue)
+            if authenticated {
+                Button(action: {
+                    executing(action: { post = try await voteUseCase.call(input: .init(siteUrl: post.siteUrl, postId: post.id, voteType: .down)) }, errorHandler: errorHandling)
+                }, label: {
+                    Image(systemName: post.myVote < 1 ? "arrow.uturn.down" : "arrow.down")
+                })
+                .tint(Color.blue)
+            }
         })
         .fullScreenCover(item: $activeOverlay, content: { overlay in
             switch overlay {

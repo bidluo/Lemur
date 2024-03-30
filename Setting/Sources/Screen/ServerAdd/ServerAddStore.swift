@@ -5,11 +5,8 @@ import Observation
 @Observable
 class ServerAddStore {
     
-    @ObservationIgnored
-    @UseCase private var useCase: QuerySiteUseCase
-    
-    @ObservationIgnored
-    @UseCase private var addServerUseCase: AddServerUseCase
+    @ObservationIgnored @UseCase private var useCase: QuerySiteUseCase
+    @ObservationIgnored @UseCase private var addServerUseCase: AddServerUseCase
     
     var urlString: String = ""
     var isSearching: Bool = false

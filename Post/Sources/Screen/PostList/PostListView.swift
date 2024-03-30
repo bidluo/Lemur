@@ -27,6 +27,9 @@ public struct PostListView: View {
                     }
                 }
             }
+            .refreshable {
+                await executingTask(action: { try await store.load(replacingAll: true) }, errorHandler: errorHandler)
+            }
             .scrollContentBackground(.hidden)
             .background(Colour.primaryBackground.swiftUIColor)
             .listRowSpacing(Size.smallMedium.rawValue)

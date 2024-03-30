@@ -15,6 +15,8 @@ struct CommentView: View {
     @State private var errorHandling = ErrorHandling()
     @UseCase private var voteUseCase: CommentVoteUseCase
     
+    @Environment(\.authenticated) var authenticated
+    
     private var myScore: Int { return comment.myScore ?? 0 }
     
     private var scoreColour: Color {
@@ -77,27 +79,31 @@ struct CommentView: View {
             }.padding(.smallMedium)
         }
         .swipeActions(edge: .leading, allowsFullSwipe: true, content: {
-            Button(action: {
-                vote(type: .up)
-            }, label: {
-                Image(systemName: myScore > 0 ? "arrow.uturn.up" : "arrow.up")
-            })
-            .tint(Color.orange)
+            if authenticated {
+                Button(action: {
+                    vote(type: .up)
+                }, label: {
+                    Image(systemName: myScore > 0 ? "arrow.uturn.up" : "arrow.up")
+                })
+                .tint(Color.orange)
+            }
         })
         .swipeActions(edge: .trailing, allowsFullSwipe: true, content: {
-            Button(action: {
-                replyTapped?(comment)
-            }, label: {
-                Image(systemName: "arrowshape.turn.up.left.fill")
-            })
-            .tint(Color.green)
-            
-            Button(action: {
-                vote(type: .down)
-            }, label: {
-                Image(systemName: myScore < 0 ? "arrow.uturn.down" : "arrow.down")
-            })
-            .tint(Color.blue)
+            if authenticated {
+                Button(action: {
+                    replyTapped?(comment)
+                }, label: {
+                    Image(systemName: "arrowshape.turn.up.left.fill")
+                })
+                .tint(Color.green)
+                
+                Button(action: {
+                    vote(type: .down)
+                }, label: {
+                    Image(systemName: myScore < 0 ? "arrow.uturn.down" : "arrow.down")
+                })
+                .tint(Color.blue)
+            }
         })
 
     }

@@ -2,28 +2,34 @@ import Foundation
 
 public struct SiteOverviewResponse: Decodable {
     public let siteView: SiteSummaryResponse?
-//    public let admins: [AdminResponse]?
+    public let admins: [AdminResponse]?
     public let version: String?
     public let allLanguages: [AllLanguageResponse]?
     public let discussionLanguages: [Int]?
-    public let customEmojis: [String]?
-//    public let taglines: --Unknown
+    public let customEmojis: [CustomEmojiResponse]?
+    public let taglines: [TaglineResponse]?
     
     enum CodingKeys: String, CodingKey {
         case siteView = "site_view"
         case version
-//        case admins
+        case admins
         case allLanguages = "all_languages"
         case discussionLanguages = "discussion_languages"
-//        case taglines
+        case taglines
         case customEmojis = "custom_emojis"
     }
 }
 
-//public struct AdminResponse: Decodable {
-//    public let person: PersonResponse?
-//    public let counts: PersonCountsResponse?
-//}
+public struct AdminResponse: Decodable {
+    let person: PersonResponse?
+    let counts: PersonCountsResponse?
+    let isAdmin: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case person, counts
+        case isAdmin = "is_admin"
+    }
+}
 
 public struct AllLanguageResponse: Decodable {
     public let id: Int?
@@ -146,5 +152,61 @@ public struct SiteResponse: Decodable {
         case inboxURL = "inbox_url"
         case publicKey = "public_key"
         case instanceID = "instance_id"
+    }
+}
+
+public struct TaglineResponse: Decodable {
+    public let id, localSiteID: Int?
+    public let content, published: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case localSiteID = "local_site_id"
+        case content, published
+    }
+}
+
+public struct CustomEmojiResponse: Decodable {
+    public let id: Int?
+    public let localSiteId: Int?
+    public let shortcode: String?
+    public let imageUrl: String?
+    public let altText: String?
+    public let category: String?
+    public let published: String?
+    public let keywords: [Keyword]?
+    
+    enum CodingKeys: String, CodingKey {
+        case customEmoji = "custom_emoji"
+        case keywords
+    }
+    
+    enum CustomEmojiKeys: String, CodingKey {
+        case id
+        case localSiteId = "local_site_id"
+        case shortcode
+        case imageUrl = "image_url"
+        case altText = "alt_text"
+        case category
+        case published
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let customEmojiContainer = try? container.nestedContainer(keyedBy: CustomEmojiKeys.self, forKey: .customEmoji)
+        
+        id = try customEmojiContainer?.decodeIfPresent(Int.self, forKey: .id)
+        localSiteId = try customEmojiContainer?.decodeIfPresent(Int.self, forKey: .localSiteId)
+        shortcode = try customEmojiContainer?.decodeIfPresent(String.self, forKey: .shortcode)
+        imageUrl = try customEmojiContainer?.decodeIfPresent(String.self, forKey: .imageUrl)
+        altText = try customEmojiContainer?.decodeIfPresent(String.self, forKey: .altText)
+        category = try customEmojiContainer?.decodeIfPresent(String.self, forKey: .category)
+        published = try customEmojiContainer?.decodeIfPresent(String.self, forKey: .published)
+        keywords = try container.decodeIfPresent([Keyword].self, forKey: .keywords)
+    }
+    
+    public struct Keyword: Decodable {
+        let customEmojiId: Int?
+        let keyword: String?
     }
 }

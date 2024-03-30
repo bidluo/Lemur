@@ -6,6 +6,8 @@ struct ServerAddView: View {
     
     @State private var store = ServerAddStore()
     @State private var errorHandler = ErrorHandling()
+    @EnvironmentObject private var serversChangedNotifier: ServersChangedNotifier
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationStack {
@@ -28,7 +30,10 @@ struct ServerAddView: View {
             }
             .safeAreaInset(edge: .bottom, content: {
                 Button(action: {
-                    executing(action: store.submit, errorHandler: errorHandler)
+                    executing(action: store.submit, errorHandler: errorHandler, completion: {
+                        serversChangedNotifier.changed()
+                        dismiss()
+                    })
                 }, label: {
                     Text("Add server")
                 })
@@ -45,7 +50,7 @@ struct ServerAddView: View {
             .keyboardType(.URL)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-            .navigationTitle("Server add")
+            .navigationTitle("Add server")
             .navigationBarTitleDisplayMode(.inline)
             .withErrorHandling(errorHandling: errorHandler)
             .task(id: store.urlString, duration: .milliseconds(500), errorHandler: errorHandler, task: {

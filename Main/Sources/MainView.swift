@@ -13,11 +13,15 @@ class MainStore {
     }
     
     var activeSheet: PresentedSheet?
+    var authenticated: Bool = true
 }
 
 struct MainView: View {
     @State private var store = MainStore()
+    @State private var serversChangedNotifier = ServersChangedNotifier()
     @EnvironmentObject private var provider: Common.ViewProvider
+    
+    @State private var postListId = UUID()
     
     var body: some View {
         TabView {
@@ -39,12 +43,13 @@ struct MainView: View {
                             }
                         }
                 }, content: {
-                    PostListView()
+                    provider.postProvider?.listView()
+                        .environment(\.authenticated, store.authenticated)
+                        .id(postListId)
                 }, detail: {
                 }
             )
             .navigationSplitViewStyle(.balanced)
-
             .tabItem {
                 Image(systemName: "house.fill")
                 Text("Home")
@@ -68,6 +73,10 @@ struct MainView: View {
             case .signin: provider.settingsProvider?.signInView()
             }
         })
+        .environmentObject(serversChangedNotifier)
+        .serversChanged(notifier: serversChangedNotifier) {
+            postListId = UUID()
+        }
     }
 }
 

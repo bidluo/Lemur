@@ -25,7 +25,6 @@ class SiteRepository: SiteRepositoryType {
         return await local.getSites(activeOnly: activeOnly)
     }
     
-    // Caller likely to be on a background thread so needs to be done within ModelActor
     func getSiteUrls(activeOnly: Bool) async -> [URL] {
         return await local.getSiteUrls(activeOnly: activeOnly)
     }
