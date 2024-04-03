@@ -13,12 +13,14 @@ class PostDetailStore {
     
     public var sortItems: [GetPostCommentsUseCase.Sort] { return [.hot, .top, .old, .new] }
     
+    let siteUrl: URL
     var post: PostSummary?
-    var comments: [CommentContent] = []
+    private(set) var comments: [CommentContent] = []
+    private(set) var pendingComments: [CommentContent] = []
     var selectedSort: GetPostCommentsUseCase.Sort = .hot
     
     private let postId: Int
-    let siteUrl: URL
+    private var commentsLoading: Bool = false
     
     init(siteUrl: URL, id: Int) {
         self.postId = id
@@ -40,11 +42,24 @@ class PostDetailStore {
         }
     }
     
+    func setNewComments() {
+        self.comments = pendingComments
+        self.pendingComments = []
+    }
+    
     func loadComments() async throws {
+        guard commentsLoading == false else { return }
+        commentsLoading = true
+        defer { commentsLoading = false }
+        
         for try await comments in await self.getCommentsUseCase.call(
             input: .init(baseUrl: self.siteUrl, postId: self.postId, sort: self.selectedSort)
         ) {
-            self.comments = comments.comments
+            if self.comments.isEmpty {
+                self.comments = comments.comments
+            } else {
+                self.pendingComments = comments.comments
+            }
         }
     }
 }

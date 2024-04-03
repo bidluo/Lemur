@@ -27,17 +27,81 @@ struct CommentView: View {
         }
     }
     
+    struct CommentLine: Shape {
+        func path(in rect: CGRect) -> Path {
+            Path { path in
+                path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+                path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            }
+        }
+    }
+    
+    struct SecondaryCommentCurve: Shape {
+        
+        let drawsBottomLine: Bool
+        
+        func path(in rect: CGRect) -> Path {
+            Path { path in
+                path.move(to: CGPoint(x: rect.minX, y: rect.minY + 5))
+                
+                path.addQuadCurve(
+                    to: CGPoint(x: rect.maxX, y: 20),
+                    control: CGPoint(x: rect.minX, y: 20)
+                )
+                path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+                path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + 5))
+                
+                if drawsBottomLine {
+                    path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+                }
+            }
+        }
+    }
+
     var body: some View {
-        HStack(spacing: .zero) {
-            if nestLevel > 0 {
-                ForEach(0..<nestLevel, id: \.self) { level in
-                    CommentColourPalette.standard.color(forNestLevel: level)
-                        .frame(width: 4.0)
+        HStack(alignment: .top, spacing: .zero) {
+            Spacer(minLength: 12)
+ 
+            if nestLevel >= 1 {
+                Spacer(minLength: 12)
+            }
+            
+            if comment.parentId != nil {
+//                Spacer(minLength: 12)
+                ForEach(1..<(nestLevel)) { depth in
+                    if (comment.linesToDraw & (1 << depth)) != 0 {
+                        CommentLine()
+                            .stroke(Color.gray, lineWidth: 1)
+                            .frame(width: 1)
+                        Spacer(minLength: 31) // Size of curve + half/avatar(24) - 1 (line)
+                    } else {
+                        Spacer(minLength: 32) // Size of curve + half/avatar(24)
+                    }
+//                    else {
+////                        Text("0")
+//                    }
+                }
+                
+                SecondaryCommentCurve(drawsBottomLine: comment.hasNextSibling)
+                    .stroke(Color.gray, lineWidth: 1)
+                    .frame(width: 20)
+            }
+            
+            VStack(spacing: .zero) {
+                Circle()
+                    .frame(width: 24, height: 24)
+                    .padding(.top, 10)
+                
+                if comment.children?.isEmpty == false {
+                    CommentLine()
+                        .stroke(Color.gray, lineWidth: 1)
+                        .frame(width: 1)
                 }
             }
             
             VStack(alignment: .leading, spacing: Size.extraSmall.rawValue) {
                 HStack(alignment: .lastTextBaseline, spacing: Size.extraSmall.rawValue) {
+                    Text("\(nestLevel)")
                     Text(comment.creatorName)
                         .font(.subheadingBold)
                     if comment.creatorIsLocal == false, let creatorHome = comment.creatorHome {
@@ -125,48 +189,5 @@ extension CommentView {
         var new = self
         new.replyTapped = handler
         return new
-    }
-}
-
-struct CommentColourPalette {
-    private let colours: [Color]
-    
-    // TODO: Update with real colours
-    static var standard: CommentColourPalette {
-        return CommentColourPalette(colours: [
-            Color(red: 0.90, green: 0.49, blue: 0.13), // vibrant orange
-            Color(red: 0.21, green: 0.61, blue: 0.35), // vibrant green
-            Color(red: 0.61, green: 0.35, blue: 0.71), // vibrant purple
-            Color(red: 0.30, green: 0.50, blue: 0.63), // vibrant blue
-            Color(red: 0.75, green: 0.22, blue: 0.17), // vibrant red
-            Color(red: 0.60, green: 0.31, blue: 0.64), // vibrant violet
-            Color(red: 0.95, green: 0.61, blue: 0.07), // vibrant yellow
-            Color(red: 0.11, green: 0.56, blue: 0.57), // vibrant teal
-            Color(red: 0.85, green: 0.37, blue: 0.01), // vibrant tangerine
-            Color(red: 0.46, green: 0.67, blue: 0.59)  // vibrant sea green
-        ])
-    }
-    
-    static var pastel: CommentColourPalette {
-        return CommentColourPalette(colours: [
-            Color(red: 1.00, green: 0.71, blue: 0.76), // pastel pink
-            Color(red: 0.69, green: 0.88, blue: 0.90), // pastel blue
-            Color(red: 1.00, green: 0.99, blue: 0.71), // pastel yellow
-            Color(red: 0.68, green: 0.83, blue: 0.90), // pastel sky blue
-            Color(red: 0.88, green: 0.65, blue: 0.88), // pastel purple
-            Color(red: 0.69, green: 0.94, blue: 0.73), // pastel green
-            Color(red: 0.96, green: 0.75, blue: 0.65), // pastel orange
-            Color(red: 0.60, green: 0.75, blue: 0.90), // pastel indigo
-            Color(red: 0.95, green: 0.68, blue: 0.73), // pastel red
-            Color(red: 0.81, green: 0.81, blue: 0.80)
-        ])
-    }
-    
-    init(colours: [Color]) {
-        self.colours = colours
-    }
-    
-    func color(forNestLevel level: Int) -> Color {
-        return colours[level % colours.count]
     }
 }

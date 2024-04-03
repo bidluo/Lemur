@@ -40,7 +40,20 @@ struct PostDetailView: View {
                 }
                 .disclosureGroupStyle(.arrowLess)
                 .listRowInsets(EdgeInsets(.all, size: .zero))
+                .listRowSeparator(.hidden)
             }
+            .safeAreaInset(edge: .bottom, content: {
+                if store.pendingComments.isEmpty == false {
+                    Button(action: {
+                        store.setNewComments()
+                    }, label: {
+                        Text(PostStrings.PostDetail.LoadMoreComments)
+                    })
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.roundedRectangle(radius: 20))
+                    .padding(.small)
+                }
+            })
             .navigationBarTitleDisplayMode(.inline)
             .listSectionSpacing(.compact)
             .listStyle(.grouped)

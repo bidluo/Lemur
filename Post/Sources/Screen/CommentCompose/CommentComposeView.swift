@@ -73,11 +73,6 @@ struct CommentComposeView: View {
     
     private var contentView: some View {
         HStack(spacing: .zero) {
-            ForEach(0..<nestLevel + 1, id: \.self) { level in
-                CommentColourPalette.standard.color(forNestLevel: level)
-                    .frame(width: 4.0)
-            }
-            
             VStack(alignment: .leading, spacing: Size.extraSmall.rawValue) {
                 HStack(alignment: .lastTextBaseline, spacing: Size.extraSmall.rawValue) {
                     

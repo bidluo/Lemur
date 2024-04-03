@@ -27,22 +27,8 @@ struct MainView: View {
         TabView {
             NavigationSplitView(
                 columnVisibility: .constant(.doubleColumn),
-                preferredCompactColumn: .constant(.content),
+                preferredCompactColumn: .constant(.sidebar),
                 sidebar: {
-                    MainSideBarView()
-                        .toolbar {
-                            Button(action: {
-                                store.activeSheet = .signin
-                            }, label: {
-                                Image(systemName: "person.circle.fill")
-                            })
-                        }
-                        .toolbar {
-                            ToolbarItem(placement: .principal) {
-                                Text("Communities")
-                            }
-                        }
-                }, content: {
                     provider.postProvider?.listView()
                         .environment(\.authenticated, store.authenticated)
                         .id(postListId)

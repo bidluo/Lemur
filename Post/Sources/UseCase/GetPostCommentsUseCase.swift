@@ -31,9 +31,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
     }
     
     private func handleComments(postId: Int, comments: [Comment]) -> [CommentContent] {
-        // A dictionary that maps from parent id to a list of child comments.
         var childrenDict: [Int: [CommentContent]] = [:]
-        
         var commentsDict: [Int: CommentContent] = [:]
         
         comments.forEach { comment in
@@ -55,6 +53,7 @@ class GetPostCommentsUseCase: UseCaseStreamType {
                 creatorHome: nil,
                 score: comment.score,
                 myScore: comment.myVote, 
+                hasNextSibling: false,
                 parentId: nil,
                 children: []
             )
@@ -66,18 +65,33 @@ class GetPostCommentsUseCase: UseCaseStreamType {
             }
             
             commentsDict[comment.id] = comment
-            if childrenDict[parentId] == nil {
-                childrenDict[parentId] = []
-            }
-            childrenDict[parentId]!.append(comment)
+            
+            var childrenForParent = childrenDict[parentId] ?? []
+            childrenForParent.append(comment)
+            
+            childrenDict[parentId] = childrenForParent
         }
         
-        func buildTree(_ id: Int) -> [CommentContent]? {
+        func buildTree(_ id: Int, currentDepth: Int = 0, parentLinesToDraw: Int = 0) -> [CommentContent]? {
             guard let children = childrenDict[id] else { return nil }
             var result: [CommentContent] = []
-            for child in children {
+            
+            for (index, child) in children.enumerated() {
                 var child = child
-                child.children = buildTree(child.id)
+                child.hasNextSibling = index < children.count - 1
+                
+                var childLinesToDraw = parentLinesToDraw
+                
+                // If this child is the last one, clear the bit at current depth. For others, set it.
+                if child.hasNextSibling {
+                    childLinesToDraw |= 1 << currentDepth
+                } else {
+                    childLinesToDraw &= ~(1 << currentDepth)
+                }
+                
+                child.linesToDraw = childLinesToDraw
+                
+                child.children = buildTree(child.id, currentDepth: currentDepth + 1, parentLinesToDraw: childLinesToDraw)
                 result.append(child)
             }
             return result

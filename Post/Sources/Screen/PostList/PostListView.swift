@@ -13,7 +13,7 @@ public struct PostListView: View {
     public var body: some View {
         GeometryReader { proxy in
             List {
-                ForEach(store.rows, id: \.self) { item in
+                ForEach(store.rows, id: \.id) { item in
                     NavigationLinkWithoutChevron(value: item, label: {
                         PostView(post: item, fullView: false, width: proxy.size.width)
                             .listRowBackground(Colour.secondaryBackground.swiftUIColor)
@@ -86,9 +86,6 @@ public struct PostListView: View {
             })
             .task {
                 await executingTask(action: { try await store.load() }, errorHandler: errorHandler)
-            }
-            .transaction { transaction in
-                transaction.dismissBehavior = .interactive
             }
         }
     }
