@@ -40,6 +40,7 @@ struct CommentComposeView: View {
                     comment: parentContent,
                     siteUrl: .applicationDirectory,
                     nestLevel: nestLevel,
+                    expanded: true,
                     scrollsContent: true
                 )
                 .frame(maxHeight: 250)

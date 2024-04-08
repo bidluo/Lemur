@@ -8,6 +8,7 @@ struct CommentView: View {
     @State var comment: CommentContent
     let siteUrl: URL
     let nestLevel: Int
+    let expanded: Bool
     var scrollsContent: Bool = false
     
     var replyTapped: ((CommentContent) -> Void)?
@@ -16,6 +17,18 @@ struct CommentView: View {
     @UseCase private var voteUseCase: CommentVoteUseCase
     
     @Environment(\.authenticated) var authenticated
+    
+    private let baseSpacerLength: CGFloat = 10
+    private let lineStrokeWidth: CGFloat = 1
+    private let curveFrameWidth: CGFloat = 12
+    private let avatarWidth: CGFloat = 16
+    
+    private var additionalSpacerForLine: CGFloat {
+        (curveFrameWidth + avatarWidth / 2) - lineStrokeWidth
+    }
+    private var additionalSpacerNoLine: CGFloat {
+        curveFrameWidth + avatarWidth / 2
+    }
     
     private var myScore: Int { return comment.myScore ?? 0 }
     
@@ -36,7 +49,7 @@ struct CommentView: View {
         }
     }
     
-    struct SecondaryCommentCurve: Shape {
+    struct CommentCurve: Shape {
         
         let drawsBottomLine: Bool
         
@@ -46,7 +59,7 @@ struct CommentView: View {
                 
                 path.addQuadCurve(
                     to: CGPoint(x: rect.maxX, y: 20),
-                    control: CGPoint(x: rect.minX, y: 20)
+                    control: CGPoint(x: rect.minX, y: 15)
                 )
                 path.move(to: CGPoint(x: rect.minX, y: rect.minY))
                 path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + 5))
@@ -57,51 +70,60 @@ struct CommentView: View {
             }
         }
     }
-
+    
+    private var fadingGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [Color.gray, Color.gray.opacity(0)]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+    
     var body: some View {
         HStack(alignment: .top, spacing: .zero) {
-            Spacer(minLength: 12)
- 
+            Spacer(minLength: baseSpacerLength)
+            
             if nestLevel >= 1 {
-                Spacer(minLength: 12)
+                Spacer(minLength: avatarWidth / 2)
             }
             
             if comment.parentId != nil {
-//                Spacer(minLength: 12)
-                ForEach(1..<(nestLevel)) { depth in
+                ForEach(Array(1..<nestLevel), id: \.self) { depth in
                     if (comment.linesToDraw & (1 << depth)) != 0 {
                         CommentLine()
-                            .stroke(Color.gray, lineWidth: 1)
-                            .frame(width: 1)
-                        Spacer(minLength: 31) // Size of curve + half/avatar(24) - 1 (line)
+                            .stroke(Color.gray, lineWidth: lineStrokeWidth)
+                            .frame(width: lineStrokeWidth)
+                        Spacer(minLength: additionalSpacerForLine)
                     } else {
-                        Spacer(minLength: 32) // Size of curve + half/avatar(24)
+                        Spacer(minLength: additionalSpacerNoLine)
                     }
-//                    else {
-////                        Text("0")
-//                    }
                 }
                 
-                SecondaryCommentCurve(drawsBottomLine: comment.hasNextSibling)
-                    .stroke(Color.gray, lineWidth: 1)
-                    .frame(width: 20)
+                CommentCurve(drawsBottomLine: comment.hasNextSibling)
+                    .stroke(Color.gray, lineWidth: lineStrokeWidth)
+                    .frame(width: curveFrameWidth)
             }
             
             VStack(spacing: .zero) {
                 Circle()
-                    .frame(width: 24, height: 24)
+                    .frame(width: avatarWidth, height: avatarWidth)
                     .padding(.top, 10)
                 
                 if comment.children?.isEmpty == false {
-                    CommentLine()
-                        .stroke(Color.gray, lineWidth: 1)
-                        .frame(width: 1)
+                    if expanded {
+                        CommentLine()
+                            .stroke(Color.gray, lineWidth: lineStrokeWidth)
+                            .frame(width: lineStrokeWidth)
+                    } else {
+                        CommentLine()
+                            .stroke(fadingGradient, style: StrokeStyle(lineWidth: lineStrokeWidth, lineCap: .round, dash: [5, 3]))
+                            .frame(width: lineStrokeWidth)
+                    }
                 }
             }
             
             VStack(alignment: .leading, spacing: Size.extraSmall.rawValue) {
                 HStack(alignment: .lastTextBaseline, spacing: Size.extraSmall.rawValue) {
-                    Text("\(nestLevel)")
                     Text(comment.creatorName)
                         .font(.subheadingBold)
                     if comment.creatorIsLocal == false, let creatorHome = comment.creatorHome {
@@ -117,28 +139,33 @@ struct CommentView: View {
                     }
                 }
                 
-                if scrollsContent {
-                    ScrollView {
+                if expanded {
+                    if scrollsContent {
+                        ScrollView {
+                            Markdown(comment.content)
+                        }
+                    } else {
                         Markdown(comment.content)
                     }
-                } else {
-                    Markdown(comment.content)
                 }
                 
                 HStack(spacing: Size.small.rawValue) {
-                    Spacer()
+                    if let children = comment.children?.count, children > 0 {
+                        Text(children == 1 ? PostStrings.Comment.Reply : PostStrings.Comment.Replies(children))
+                            .foregroundStyle(.gray)
+                    }
                     
                     if let score = comment.score {
                         Group {
                             Text("\(score)")
-                            
                             Image(systemName: "arrow.up.arrow.down")
                         }
-                        .font(.footnote)
-                        .fontDesign(.monospaced)
                         .foregroundStyle(scoreColour)
                     }
                 }
+                .padding(.top, .extraSmall)
+                .font(.footnote)
+                .fontDesign(.monospaced)
                 
             }.padding(.smallMedium)
         }

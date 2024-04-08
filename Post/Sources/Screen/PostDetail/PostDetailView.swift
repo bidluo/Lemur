@@ -32,15 +32,24 @@ struct PostDetailView: View {
                     }
                 }
                 
-                NodeListOutlineGroup(store.comments, children: \.children) { comment, nestLevel in
-                    CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel)
-                        .replyTapped { comment in
-                            presentedSheet = .composeComment(comment, nestLevel)
-                        }
+                ForEach(store.comments) { parent in
+                    SectionWithoutHeader {
+                        NodeOutlineGroup(
+                            node: parent,
+                            children: \.children,
+                            nestLevel: 0,
+                            content: {
+                                comment, nestLevel, isExpanded in
+                                CommentView(comment: comment, siteUrl: store.siteUrl, nestLevel: nestLevel, expanded: isExpanded)
+                                    .replyTapped { comment in
+                                        presentedSheet = .composeComment(comment, nestLevel)
+                                    }
+                            })
+                    }
+                    .disclosureGroupStyle(.arrowLess)
+                    .listRowInsets(EdgeInsets(.all, size: .zero))
+                    .listRowSeparator(.hidden)
                 }
-                .disclosureGroupStyle(.arrowLess)
-                .listRowInsets(EdgeInsets(.all, size: .zero))
-                .listRowSeparator(.hidden)
             }
             .safeAreaInset(edge: .bottom, content: {
                 if store.pendingComments.isEmpty == false {
@@ -54,6 +63,7 @@ struct PostDetailView: View {
                     .padding(.small)
                 }
             })
+            .environment(\.defaultMinListHeaderHeight, .zero)
             .navigationBarTitleDisplayMode(.inline)
             .listSectionSpacing(.compact)
             .listStyle(.grouped)

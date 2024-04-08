@@ -21,6 +21,7 @@ class PostDetailStore {
     
     private let postId: Int
     private var commentsLoading: Bool = false
+    private var needsLoad: Bool = true
     
     init(siteUrl: URL, id: Int) {
         self.postId = id
@@ -28,6 +29,8 @@ class PostDetailStore {
     }
     
     func load() async throws {
+        guard needsLoad else { return }
+        defer { needsLoad = false }
         try await withThrowingDiscardingTaskGroup { [weak self] group in
             guard let self else { return }
             group.addTask {
@@ -48,9 +51,9 @@ class PostDetailStore {
     }
     
     func loadComments() async throws {
-        guard commentsLoading == false else { return }
+        guard commentsLoading == false, needsLoad else { return }
         commentsLoading = true
-        defer { commentsLoading = false }
+        defer { commentsLoading = false; needsLoad = false }
         
         for try await comments in await self.getCommentsUseCase.call(
             input: .init(baseUrl: self.siteUrl, postId: self.postId, sort: self.selectedSort)

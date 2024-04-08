@@ -10,13 +10,13 @@ public struct NodeOutlineGroup<Node, Content>: View where Node: Hashable, Node: 
     let node: Node
     let children: KeyPath<Node, [Node]?>
     let nestLevel: Int
-    let content: (Node, Int) -> Content
+    let content: (Node, Int, Bool) -> Content
     
     public init(
         node: Node,
         children: KeyPath<Node, [Node]?>,
         nestLevel: Int,
-        content: @escaping (Node, Int) -> Content
+        content: @escaping (Node, Int, Bool) -> Content
     ) {
         self.node = node
         self.children = children
@@ -25,11 +25,10 @@ public struct NodeOutlineGroup<Node, Content>: View where Node: Hashable, Node: 
     }
     
     public var body: some View {
-        if let nodeChildren = node[keyPath: children] {
             DisclosureGroup(
                 isExpanded: $isExpanded,
                 content: {
-                    if isExpanded {
+                    if let nodeChildren = node[keyPath: children], isExpanded {
                         ForEach(nodeChildren, id: \.self) { childNode in
                             NodeOutlineGroup(
                                 node: childNode,
@@ -41,28 +40,7 @@ public struct NodeOutlineGroup<Node, Content>: View where Node: Hashable, Node: 
                     }
                 },
                 label: {
-                    content(node, nestLevel)
+                    content(node, nestLevel, isExpanded)
                 })
-        } else {
-            content(node, nestLevel)
-        }
-    }
-}
-
-public struct NodeListOutlineGroup<Node, Content>: View where Node: Hashable, Node: Identifiable, Content: View {
-    let nodes: [Node]
-    let children: KeyPath<Node, [Node]?>
-    let content: (Node, Int) -> Content
-    
-    public init(_ nodes: [Node], children: KeyPath<Node, [Node]?>, content: @escaping (Node, Int) -> Content) {
-        self.nodes = nodes
-        self.children = children
-        self.content = content
-    }
-    
-    public var body: some View {
-        ForEach(nodes) { node in
-            NodeOutlineGroup(node: node, children: children, nestLevel: 0, content: content)
-        }
     }
 }

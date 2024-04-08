@@ -7,3 +7,5 @@
 
 "CommentCompose.Title" = "Replying to...";
 "PostDetail.LoadMoreComments" = "Load more comments...";
+"Comment.Replies" = "%d replies";
+"Comment.Reply" = "1 reply";
